@@ -1,0 +1,103 @@
+﻿Knob autamatically sets rotation, you do not have to call SetRotationFromValue().
+Do this for all other controls where it makes sense.
+
+Using graphic card, CUDA, is less efficient than using CPU, probably due to the
+time it takes to call the dll functions. See if more can be done in one call
+rather than many calls.
+
+Add a settings ContentDialog. Move 'Common ADSR' and add 'Common Pitch Envelope' to it.
+Add 'Never use graphics card' to settings.
+
+Adapt saving and loading of Patches.
+
+Add buttons for 'factory' patches. Make a hidden AreaButton somewhere to save a
+factory patch. Patches should be saved in Local folder:
+https://docs.microsoft.com/en-us/windows/uwp/files/quickstart-reading-and-writing-files
+Remove the hidden AreaButton before publishing the application!
+
+Find all code that is temporary disabled due to the change to multiple layouts and
+the use of CompoundControl.
+
+Fix Graph point resizing.
+
+Make Oscilloscope show more, like it did some versions before the last version 
+with only twelve oscillators layout.
+
+Make DigitalDisplay show frequencies when setting points in PitchEnvelope.
+
+Implement ADSR FM and PULSE FM for oscillators. This was before a cable connection
+from the ADSR to an oscillator input. Now it will be only to FM (maybe also PM?)
+since AM is the natural function of the ADSR.
+
+Investigate why Knobs and sliders (all 'move while mousebutton down') sometimes
+sticks to a control after mousebutton is released and why clicking a CompoundControl
+without hitting a SubControl disables scrollwheel functionality. Clicking any Knob, 
+Slider or Joystick enables scrollwheel but also makes the control stick to mouse 
+movements, so it must be clicked again. This bug is in UwpControlsLibrary.
+
+PitchEnvelope should effect also modulators.
+
+Add for PitchEnvelope to be controlled by Modulation wheel.
+
+Change key priority to replace first key.
+
+Move all GUI's from Patch to MainPage!
+
+Split up files and put in folders!
+
+Regarding filtering at low frequency that causes crackling noise: In those cases we
+get to use very large fftData arrays in order to get a full cycle for the FFT to get
+a correct result. However the FFT takes too long time. Try some scheme using FFT on
+combed data in order to get the filtered waveform, then use each sample multiple
+times to create the final waveform. Try combing out half the samples under key 44,
+a fourth of the samples under key 32. If it gets better but not good enough, try
+other combings and other keys.
+
+Make sure never to filter LFO oscillators.
+
+Create an extra ramp off frame to use when releasing a key with pulse or release
+time = 0, and see to it that it gets generated at key off in the same situation.
+
+Create cables for 3 levels down and for horizontal connections.
+
+Create a settings page with keyboard split.
+
+Bug: If more than one oscillator is active, the one with the shortest release
+releases all active oscillators. They should all follow their own adsr. Move
+adsr to oscillator.
+
+DX style FM modulation takes too long, even with my class Sine.
+
+Add a 'Are you sure that you want to discard these settings?' question when
+changing layout and has made any changes.
+
+Add settings where oscillator output level can depend on keyboard key in order to
+raise lower tones. E.g. sine tones needs a large boost in lower range.
+
+Patch should contain only real settings. Those are the GUI's and the different
+settings accessible from the control panel. Everything else should not be in Patch.
+Create a class for the control panel called ControlPanel.
+
+Removing DX style FM modulator causes crash in oscilloscope.Draw().
+
+Modulations interferes between polys.
+
+=== Issues that are done ===========================================================
+
+In some layouts single GUI's are used. They should be stored in the GUI lists first
+element, not in separate objects. Seems to be done already.
+
+See if sample rate can be set to have requested frame size to be 480, or select
+an allowed lower sampling rate to get a smaller frame size. Not possible!
+
+ADSR bug: A = 0, D > 0, S = 0, R don't matter => no sound!
+          A >= 0, D > 0, S = 0, R don't matter => sound ok!
+          NOT a bug! A and D are 0 thus S is used immediatelly.
+
+Using only 1 Pitch Envelope GUI: the GUI is not updated when viewing different
+oscillators.
+
+Make DigitalDisplay show initial frequency on startup and patch load.
+
+Implement ADSR mode ADSR FM and PULSE FM, for Keyboard and LFO mode.
+Removed, not needed since we have a pitch envelope generator.

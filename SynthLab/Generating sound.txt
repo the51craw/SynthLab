@@ -1,0 +1,60 @@
+﻿These ideas have arizen during the hunt for easing CPU load.
+
+Rather than making a complex sound wave on-the-fly the wave can be made
+in advance for one cycle, and then used in the on-the-fly code rather than
+generating it all each time a wave frame is requested. The pre made wave
+shape can be made when a waveform is selected, thus easing the load a lot.
+
+A separate class called WaveShape handles and holds the creation of the
+wave shape. Each oscillator is associated with one of 12 WaveShape objects.
+All polys for one oscillator uses the same WaveShape object.
+WaveShape also uses the filter, if active.
+The shape is initially a square wave and changes when the user selects
+another wave form.
+
+This scheme does not hold in all situations:
+	XM Modulation:
+		SquareWave:
+			Since the phase shifts continously the wave shape needs to 
+			be re-generated often. Doing so for each new requested frame
+			would mean that the wave is generated 100 times per second, 
+			which should not diminish the sound quality. Therefore the
+			frame server can ask the WaveShape object for the current
+			oscillator to re-generate the wave form. Note that the wave
+			is also filtered in WaveShape, so the filtering must be the
+			same as in the oscillator, and in this case also skipped in 
+			the oscillator.
+		Yamaha DX FM modulation style:
+			Since modulators can be set to different frequencies all
+			frames may look different and needs to be re-created on-
+			the-fly by the Oscillator code.
+
+However FM and AM modulation can be performed with the on-the-fly code
+that can modulate the wave data generated from the data in WaveShape.
+
+Because of the above cases a filter is needed in both WaveShape and
+in the Oscillator class.
+
+When the Oscillator's on-the-fly code generates the wave data and the
+filter is active, filtering uses the CPU more than it normally can
+handle, which causes drop-outs in the sound. This is the solution 
+to ease the load on the CPU and to remedy this situation:
+
+When copying the generated wave data to an array of Complex objects
+only every second value is used. The FFT's thus has half as much
+data to work with, and thus only has to perform 1/4 as many operations
+as it had to do if all samples were used. When copying back the wave
+data each Complex object is used twice. This would lower the resolution
+to half the sample rate of the sound card, but in most cases that is
+still above what the ear can distinguish.
+
+
+
+Using the graphics card for manipulating frames is not efficient since
+the code must reside in a dll, and the dll code uses about the same
+amount of time as it takes to generate a frame.
+
+Using the graphocs card is therefore usefull only if it is possible 
+to implement more of the steps inside the dll. This does not neccesarily
+mean that all must be done in the fraphics card, but some code can
+be used in C code in the dll.

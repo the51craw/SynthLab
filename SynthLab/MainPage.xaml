@@ -1,0 +1,208 @@
+﻿<Page
+    x:Class="SynthLab.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SynthLab"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" KeyDown="Page_KeyDown" KeyUp="Page_KeyUp">
+
+    <Grid x:Name="gridMain" x:FieldModifier="public">
+        <Image x:Name="imgOscillatorBackground" Source="ms-appx:///Images/OscillatorBackground.png" x:FieldModifier="public" Stretch="None" Margin="2, 2, 0, 0" />
+        <Image x:Name="imgAdsrBackground" Source="ms-appx:///Images/AdsrBackground.png" x:FieldModifier="public" Stretch="None" Margin="2, 2, 0, 0" />
+        <Image x:Name="imgFilterBackground" Source="ms-appx:///Images/FilterBackground.png" x:FieldModifier="public" Stretch="None" Margin="2, 2, 0, 0" />
+        <Image x:Name="imgDisplayBackground" Source="ms-appx:///Images/DisplayBackground.png" x:FieldModifier="public" Stretch="None" Margin="2, 2, 0, 0" />
+        <Image x:Name="imgGraphBackground" Source="ms-appx:///Images/GraphBackground.png" x:FieldModifier="public" Stretch="None" Margin="2, 2, 0, 0" />
+        <Image x:Name="imgControlPanelBackground" Source="ms-appx:///Images/ControlPanelBackground.png" x:FieldModifier="public" Stretch="None" Margin="2, 2, 0, 0" />
+        <Image x:Name="imgPitchEnvelopeBackground" Source="ms-appx:///Images/PitchEnvelopeBackground.png" x:FieldModifier="public" Stretch="None" Margin="2, 2, 0, 0" />
+        <Image x:Name="imgPitchEnvelopeGraphBackground" Source="ms-appx:///Images/PitchEnvelopeGraphBackground.png" x:FieldModifier="public" Stretch="None" Margin="2, 2, 0, 0" />
+        <Image x:Name="imgGraphDisplayBackground" Source="ms-appx:///Images/GraphDisplayBackground.png" x:FieldModifier="public" Stretch="None" Margin="2, 2, 0, 0" />
+        <Image x:Name="imgAdsrGraphBackground" Source="ms-appx:///Images/AdsrGraphBackground.png" x:FieldModifier="public" Stretch="None" Margin="2, 2, 0, 0" />
+        <Image x:Name="imgSelectFixFreq" Source="ms-appx:///Images/SelectFixFreq.png" x:FieldModifier="public" Stretch="None"  />
+        <Image x:Name="imgSelectKeyboard" Source="ms-appx:///Images/SelectKeyboard.png" x:FieldModifier="public" Stretch="None"  />
+        <Image x:Name="imgSelectNoise" Source="ms-appx:///Images/SelectNoise.png" x:FieldModifier="public" Stretch="None"  />
+        <Image x:Name="imgSelectRandom" Source="ms-appx:///Images/SelectRandom.png" x:FieldModifier="public" Stretch="None"  />
+        <Image x:Name="imgSelectSawDwn" Source="ms-appx:///Images/SelectSawDwn.png" x:FieldModifier="public" Stretch="None"  />
+        <Image x:Name="imgSelectSawUp" Source="ms-appx:///Images/SelectSawUp.png" x:FieldModifier="public" Stretch="None"  />
+        <Image x:Name="imgSelectSine" Source="ms-appx:///Images/SelectSine.png" x:FieldModifier="public" Stretch="None"  />
+        <Image x:Name="imgSelectSquare" Source="ms-appx:///Images/SelectSquare.png" x:FieldModifier="public" Stretch="None"  />
+        <Image x:Name="imgSelectTriangle" Source="ms-appx:///Images/SelectTriangle.png" x:FieldModifier="public" Stretch="None"  />
+        <Image x:Name="imgLoadFromFile" Source="ms-appx:///Images/LoadFromFile.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgSaveToFile" Source="ms-appx:///Images/SaveToFile.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgSaveAsToFile" Source="ms-appx:///Images/SaveAsToFile.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFactoryPatches" Source="ms-appx:///Images/FactoryPatches.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgLayout4" Source="ms-appx:///Images/Layout4.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgLayout6" Source="ms-appx:///Images/Layout6.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgLayout8" Source="ms-appx:///Images/Layout8.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgLayout12" Source="ms-appx:///Images/Layout12.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgCommonAdsr" Source="ms-appx:///Images/CommonAdsr.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgSeparateAdsr" Source="ms-appx:///Images/SeparateAdsr.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgUsingGraphicsCardOff" Source="ms-appx:///Images/UsingGraphicsCardOff.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgUsingGraphicsCardOn" Source="ms-appx:///Images/UsingGraphicsCardOn.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgMidiSettings" Source="ms-appx:///Images/MidiSettings2.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgSettings" Source="ms-appx:///Images/Settings.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgManual" Source="ms-appx:///Images/Manual2.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgModAll" Source="ms-appx:///Images/ModAll.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgModAM" Source="ms-appx:///Images/ModAM.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgModFM" Source="ms-appx:///Images/ModFM.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgModPM" Source="ms-appx:///Images/ModPM.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgSelectorAdsr" Source="ms-appx:///Images/SelectADSR.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgSelectorPulse" Source="ms-appx:///Images/SelectPulse.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgSelectorAdsrFm" Source="ms-appx:///Images/SelectorAdsrFm.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgSelectorPulseFm" Source="ms-appx:///Images/SelectorAdsrPulse.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgSelectorViewOff" Source="ms-appx:///Images/SelectorViewOff.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgSelectorViewOn" Source="ms-appx:///Images/SelectorViewOn.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgSelectHoldOn" Source="ms-appx:///Images/PedalDown.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgSelectHoldOff" Source="ms-appx:///Images/PedalUp.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgKnob" Source="ms-appx:///Images/ArrowKnob_75.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgLedOn" Source="ms-appx:///Images/LedOn.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgLedYellowOn" Source="ms-appx:///Images/LedYellowOn.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscNumber1" Source="ms-appx:///Images/OscNumbers/1.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscNumber2" Source="ms-appx:///Images/OscNumbers/2.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscNumber3" Source="ms-appx:///Images/OscNumbers/3.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscNumber4" Source="ms-appx:///Images/OscNumbers/4.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscNumber5" Source="ms-appx:///Images/OscNumbers/5.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscNumber6" Source="ms-appx:///Images/OscNumbers/6.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscNumber7" Source="ms-appx:///Images/OscNumbers/7.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscNumber8" Source="ms-appx:///Images/OscNumbers/8.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscNumber9" Source="ms-appx:///Images/OscNumbers/9.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscNumber10" Source="ms-appx:///Images/OscNumbers/10.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscNumber11" Source="ms-appx:///Images/OscNumbers/11.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscNumber12" Source="ms-appx:///Images/OscNumbers/12.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img0" Source="ms-appx:///Images/Digit0.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img1" Source="ms-appx:///Images/Digit1.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img2" Source="ms-appx:///Images/Digit2.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img3" Source="ms-appx:///Images/Digit3.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img4" Source="ms-appx:///Images/Digit4.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img5" Source="ms-appx:///Images/Digit5.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img6" Source="ms-appx:///Images/Digit6.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img7" Source="ms-appx:///Images/Digit7.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img8" Source="ms-appx:///Images/Digit8.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img9" Source="ms-appx:///Images/Digit9.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img0Dot" Source="ms-appx:///Images/Digit0Dot.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img1Dot" Source="ms-appx:///Images/Digit1Dot.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img2Dot" Source="ms-appx:///Images/Digit2Dot.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img3Dot" Source="ms-appx:///Images/Digit3Dot.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img4Dot" Source="ms-appx:///Images/Digit4Dot.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img5Dot" Source="ms-appx:///Images/Digit5Dot.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img6Dot" Source="ms-appx:///Images/Digit6Dot.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img7Dot" Source="ms-appx:///Images/Digit7Dot.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img8Dot" Source="ms-appx:///Images/Digit8Dot.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="img9Dot" Source="ms-appx:///Images/Digit9Dot.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgModulatorWheelBackground" Source="ms-appx:///Images/ModulatorWheelBackground.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgModulatorWheelHandle" Source="ms-appx:///Images/ModulatorWheelHandle.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFilterOff" Source="ms-appx:///Images/FilterOff.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFilterFixed" Source="ms-appx:///Images/FilterFixed.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFilterAdsrPositive" Source="ms-appx:///Images/FilterAdsrPositive.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFilterAdsrNegative" Source="ms-appx:///Images/FilterAdsrNegative.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFilterAmModulator" Source="ms-appx:///Images/FilterAmModulator.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFilterFmModulator" Source="ms-appx:///Images/FilterFmModulator.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFilterPmModulator" Source="ms-appx:///Images/FilterPmModulator.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFilterXmFreq" Source="ms-appx:///Images/XmToFreq.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFilterXmFreqSqr" Source="ms-appx:///Images/XmToFreqAndSquare.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFilterPitchEnv" Source="ms-appx:///Images/FilterPitchEnv.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgModFilterOff" Source="ms-appx:///Images/ModFilterOff.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgModFilterQ" Source="ms-appx:///Images/ModFilterQ.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgModFilterFreq" Source="ms-appx:///Images/ModFilterFreq.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgModFilterKeyFollow" Source="ms-appx:///Images/ModFilterKeyFollow.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgModFilterGain" Source="ms-appx:///Images/ModFilterGain.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgModFilterMix" Source="ms-appx:///Images/ModFilterMix.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAdsrModOff" Source="ms-appx:///Images/AdsrModOff.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAdsrModA" Source="ms-appx:///Images/AdsrModA.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAdsrModD" Source="ms-appx:///Images/AdsrModD.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAdsrModS" Source="ms-appx:///Images/AdsrModS.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAdsrModR" Source="ms-appx:///Images/AdsrModR.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscillatorModWheelOff" Source="ms-appx:///Images/OscillatorModWheelOff.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscillatorModWheelAM" Source="ms-appx:///Images/OscillatorModWheelAM.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscillatorModWheelFM" Source="ms-appx:///Images/OscillatorModWheelFM.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscillatorModWheelPM" Source="ms-appx:///Images/OscillatorModWheelPM.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscillatorModWheelFrequency" Source="ms-appx:///Images/OscillatorModWheelFrequency.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscillatorModWheelFinetune" Source="ms-appx:///Images/OscillatorModWheelFinetune.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscillatorModWheelVolume" Source="ms-appx:///Images/OscillatorModWheelVolume.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscillatorAMOff" Source="ms-appx:///Images/OscillatorAMOff.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscillatorFMOff" Source="ms-appx:///Images/OscillatorFMOff.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscillatorPMOff" Source="ms-appx:///Images/OscillatorPMOff.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscillatorFreqOff" Source="ms-appx:///Images/OscillatorFreqOff.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscillatorAMOn" Source="ms-appx:///Images/OscillatorAMOn.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscillatorFMOn" Source="ms-appx:///Images/OscillatorFMOn.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscillatorPMOn" Source="ms-appx:///Images/OscillatorPMOn.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgOscillatorFreqOn" Source="ms-appx:///Images/OscillatorFreqOn.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgModWheelOff" Source="ms-appx:///Images/ModWheelOff.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgModWheelDepth" Source="ms-appx:///Images/ModWheelDepth.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgModWheelSpeed" Source="ms-appx:///Images/ModWheelSpeed.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgLogotype" Source="ms-appx:///Images/Logotype.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM1D0L" Source="ms-appx:///Images/Wires/AM1D0L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM1D0L" Source="ms-appx:///Images/Wires/FM1D0L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM1D0L" Source="ms-appx:///Images/Wires/XM1D0L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM2D0L" Source="ms-appx:///Images/Wires/AM2D0L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM2D0L" Source="ms-appx:///Images/Wires/FM2D0L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM2D0L" Source="ms-appx:///Images/Wires/XM2D0L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM1D1L" Source="ms-appx:///Images/Wires/AM1D1L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM1D1L" Source="ms-appx:///Images/Wires/FM1D1L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM1D1L" Source="ms-appx:///Images/Wires/XM1D1L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM2D1L" Source="ms-appx:///Images/Wires/AM2D1L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM2D1L" Source="ms-appx:///Images/Wires/FM2D1L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM2D1L" Source="ms-appx:///Images/Wires/XM2D1L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM1D2L" Source="ms-appx:///Images/Wires/AM1D2L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM1D2L" Source="ms-appx:///Images/Wires/FM1D2L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM1D2L" Source="ms-appx:///Images/Wires/XM1D2L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM2D2L" Source="ms-appx:///Images/Wires/AM2D2L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM2D2L" Source="ms-appx:///Images/Wires/FM2D2L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM2D2L" Source="ms-appx:///Images/Wires/XM2D2L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM1D3L" Source="ms-appx:///Images/Wires/AM1D3L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM1D3L" Source="ms-appx:///Images/Wires/FM1D3L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM1D3L" Source="ms-appx:///Images/Wires/XM1D3L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM2D3L" Source="ms-appx:///Images/Wires/AM2D3L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM2D3L" Source="ms-appx:///Images/Wires/FM2D3L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM2D3L" Source="ms-appx:///Images/Wires/XM2D3L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM3D0L" Source="ms-appx:///Images/Wires/AM3D0L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM3D0L" Source="ms-appx:///Images/Wires/FM3D0L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM3D0L" Source="ms-appx:///Images/Wires/XM3D0L.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM0D1R" Source="ms-appx:///Images/Wires/AM0D1R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM0D1R" Source="ms-appx:///Images/Wires/FM0D1R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM0D1R" Source="ms-appx:///Images/Wires/XM0D1R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM0D2R" Source="ms-appx:///Images/Wires/AM0D2R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM0D2R" Source="ms-appx:///Images/Wires/FM0D2R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM0D2R" Source="ms-appx:///Images/Wires/XM0D2R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM0D3R" Source="ms-appx:///Images/Wires/AM0D3R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM0D3R" Source="ms-appx:///Images/Wires/FM0D3R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM0D3R" Source="ms-appx:///Images/Wires/XM0D3R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM1D1R" Source="ms-appx:///Images/Wires/AM1D1R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM1D1R" Source="ms-appx:///Images/Wires/FM1D1R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM1D1R" Source="ms-appx:///Images/Wires/XM1D1R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM1D2R" Source="ms-appx:///Images/Wires/AM1D2R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM1D2R" Source="ms-appx:///Images/Wires/FM1D2R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM1D2R" Source="ms-appx:///Images/Wires/XM1D2R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM1D3R" Source="ms-appx:///Images/Wires/AM1D3R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM1D3R" Source="ms-appx:///Images/Wires/FM1D3R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM1D3R" Source="ms-appx:///Images/Wires/XM1D3R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM2D1R" Source="ms-appx:///Images/Wires/AM2D1R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM2D1R" Source="ms-appx:///Images/Wires/FM2D1R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM2D1R" Source="ms-appx:///Images/Wires/XM2D1R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM2D2R" Source="ms-appx:///Images/Wires/AM2D2R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM2D2R" Source="ms-appx:///Images/Wires/FM2D2R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM2D2R" Source="ms-appx:///Images/Wires/XM2D2R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgAM2D3R" Source="ms-appx:///Images/Wires/AM2D3R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFM2D3R" Source="ms-appx:///Images/Wires/FM2D3R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgXM2D3R" Source="ms-appx:///Images/Wires/XM2D3R.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgHangingWire" Source="ms-appx:///Images/Wires/HangingWire.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFiller" Source="ms-appx:///Images/Filler.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFiller1" Source="ms-appx:///Images/Filler1.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgFiller2" Source="ms-appx:///Images/Filler2.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgWhiteKey" Source="ms-appx:///Images/WhiteKey.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgBlackKey" Source="ms-appx:///Images/BlackKey.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgBackground" Source="ms-appx:///Images/Background.png" Stretch="Uniform" />
+        <Grid x:Name="gridControls" x:FieldModifier="public" SizeChanged="gridMain_SizeChanged" />
+        <Grid x:Name="gridControlPanel" x:FieldModifier="public" SizeChanged="gridMain_SizeChanged" />
+        <TextBlock Name="test" x:FieldModifier="public" />
+        <Grid x:Name="gridCanvases" x:FieldModifier="public" />
+        <Image x:Name="imgClickArea" Source="ms-appx:///Images/Background.png" x:FieldModifier="public" Stretch="None" Margin="0, 0, 0, 0" Opacity="0"
+            PointerMoved="imgClickArea_PointerMoved" 
+            ImageOpened="imgClickArea_ImageOpened"
+            PointerWheelChanged="imgClickArea_PointerWheelChanged" 
+            PointerReleased="imgClickArea_PointerReleased" 
+            PointerPressed="imgClickArea_PointerPressed" 
+            Tapped="imgClickArea_Tapped" />
+    </Grid>
+</Page>

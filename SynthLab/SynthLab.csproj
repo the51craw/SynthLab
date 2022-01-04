@@ -1,0 +1,572 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProjectGuid>{B60DA34A-7D15-42A2-B7D3-BCB02EAD148B}</ProjectGuid>
+    <OutputType>AppContainerExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SynthLab</RootNamespace>
+    <AssemblyName>SynthLab</AssemblyName>
+    <DefaultLanguage>en</DefaultLanguage>
+    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.19041.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
+    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+    <GenerateAppInstallerFile>True</GenerateAppInstallerFile>
+    <PackageCertificateThumbprint>195C46136158898AD6C416E4F7D101F4C83F8922</PackageCertificateThumbprint>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <GenerateTestArtifacts>True</GenerateTestArtifacts>
+    <AppxBundle>Always</AppxBundle>
+    <AppxBundlePlatforms>x64</AppxBundlePlatforms>
+    <AppInstallerUri>F:\Users\hbe_000\Projects\Synthesizer\Installer</AppInstallerUri>
+    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+    <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\ARM\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>ARM</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM'">
+    <OutputPath>bin\ARM\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>ARM</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+    <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\ARM64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>ARM64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+    <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM64'">
+    <OutputPath>bin\ARM64\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>ARM64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+    <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+    <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Action.cs" />
+    <Compile Include="ADSR.cs" />
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="AreYouSure.xaml.cs">
+      <DependentUpon>AreYouSure.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="AudioGraphCreation.cs" />
+    <Compile Include="ChannelSelector.xaml.cs">
+      <DependentUpon>ChannelSelector.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CreateControls.cs" />
+    <Compile Include="KeyDispatcher.cs" />
+    <Compile Include="EarCompensation.cs" />
+    <Compile Include="Error.xaml.cs">
+      <DependentUpon>Error.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FactoryPatches.xaml.cs">
+      <DependentUpon>FactoryPatches.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FileHandling.cs" />
+    <Compile Include="Filter.cs" />
+    <Compile Include="GUI.cs" />
+    <Compile Include="Modulation.cs" />
+    <Compile Include="OscillatorWaveforms.cs" />
+    <Compile Include="Settings.xaml.cs">
+      <DependentUpon>Settings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="WaveShape.cs" />
+    <Compile Include="FrameServer.cs" />
+    <Compile Include="Functions.cs" />
+    <Compile Include="JsonHelper.cs" />
+    <Compile Include="Keyboard.cs" />
+    <Compile Include="Layout.cs" />
+    <Compile Include="MainPage.xaml.cs">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="EventHandlers.cs" />
+    <Compile Include="MidiIn.cs" />
+    <Compile Include="MidiSettings12.xaml.cs">
+      <DependentUpon>MidiSettings12.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MidiSettings4.xaml.cs">
+      <DependentUpon>MidiSettings4.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MidiSettings6.xaml.cs">
+      <DependentUpon>MidiSettings6.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MidiSettings8.xaml.cs">
+      <DependentUpon>MidiSettings8.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Oscillator.cs" />
+    <Compile Include="Oscilloscope.cs" />
+    <Compile Include="Patch.cs" />
+    <Compile Include="PitchEnvelope.cs" />
+    <Compile Include="PolyServer.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tags.cs" />
+    <Compile Include="Wiring.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Generating sound.txt" />
+    <Content Include="Images\AdsrBackground.png" />
+    <Content Include="Images\AdsrGraphBackground.png" />
+    <Content Include="Images\DialogBackground.png" />
+    <Content Include="Images\FilterPitchEnv.png" />
+    <Content Include="Images\KeyPriorityReleaseFirst.png" />
+    <Content Include="Images\KeyPriorityStayDead.png" />
+    <Content Include="Images\Manual2.png" />
+    <Content Include="Images\MidiSettings2.png" />
+    <Content Include="Images\OscNumbers\1.png" />
+    <Content Include="Images\OscNumbers\10.png" />
+    <Content Include="Images\OscNumbers\11.png" />
+    <Content Include="Images\OscNumbers\12.png" />
+    <Content Include="Images\OscNumbers\2.png" />
+    <Content Include="Images\OscNumbers\3.png" />
+    <Content Include="Images\OscNumbers\4.png" />
+    <Content Include="Images\OscNumbers\5.png" />
+    <Content Include="Images\OscNumbers\6.png" />
+    <Content Include="Images\OscNumbers\7.png" />
+    <Content Include="Images\OscNumbers\8.png" />
+    <Content Include="Images\OscNumbers\9.png" />
+    <Content Include="Images\Patches\Patch50HzTransformerHum.png" />
+    <Content Include="Images\Patches\PatchCaveDrops.png" />
+    <Content Include="Images\Patches\PatchElectricBass.png" />
+    <Content Include="Images\Patches\PatchMorseCode.png" />
+    <Content Include="Images\Patches\PatchMysteriousOrgan.png" />
+    <Content Include="Images\Patches\PatchR2D2.png" />
+    <Content Include="Images\Patches\PatchWind.png" />
+    <Content Include="Images\Polyphony10.png" />
+    <Content Include="Images\Polyphony12.png" />
+    <Content Include="Images\Polyphony14.png" />
+    <Content Include="Images\Polyphony16.png" />
+    <Content Include="Images\Polyphony18.png" />
+    <Content Include="Images\Polyphony20.png" />
+    <Content Include="Images\Polyphony22.png" />
+    <Content Include="Images\Polyphony24.png" />
+    <Content Include="Images\Polyphony26.png" />
+    <Content Include="Images\Polyphony28.png" />
+    <Content Include="Images\Polyphony30.png" />
+    <Content Include="Images\Polyphony32.png" />
+    <Content Include="Images\Polyphony6.png" />
+    <Content Include="Images\Polyphony8.png" />
+    <Content Include="Images\SaveAsToFile.png" />
+    <Content Include="Images\TitleBackground.png" />
+    <Content Include="Images\Wires\AllSockets.png" />
+    <Content Include="Images\Wires\AM0D1R.png" />
+    <Content Include="Images\Wires\AM0D2R.png" />
+    <Content Include="Images\Wires\AM0D3R.png" />
+    <Content Include="Images\Wires\AM1D0L.png" />
+    <Content Include="Images\Wires\AM1D1L.png" />
+    <Content Include="Images\Wires\AM1D1R.png" />
+    <Content Include="Images\Wires\AM1D2L.png" />
+    <Content Include="Images\Wires\AM1D2R.png" />
+    <Content Include="Images\Wires\AM1D3L.png" />
+    <Content Include="Images\Wires\AM1D3R.png" />
+    <Content Include="Images\Wires\AM2D0L.png" />
+    <Content Include="Images\Wires\AM2D1L.png" />
+    <Content Include="Images\Wires\AM2D1R.png" />
+    <Content Include="Images\Wires\AM2D2L.png" />
+    <Content Include="Images\Wires\AM2D2R.png" />
+    <Content Include="Images\Wires\AM2D3L.png" />
+    <Content Include="Images\Wires\AM2D3R.png" />
+    <Content Include="Images\Wires\AM3D0L.png" />
+    <Content Include="Images\Wires\FM0D1R.png" />
+    <Content Include="Images\Wires\FM0D2R.png" />
+    <Content Include="Images\Wires\FM0D3R.png" />
+    <Content Include="Images\Wires\FM1D0L.png" />
+    <Content Include="Images\Wires\FM1D1L.png" />
+    <Content Include="Images\Wires\FM1D1R.png" />
+    <Content Include="Images\Wires\FM1D2L.png" />
+    <Content Include="Images\Wires\FM1D2R.png" />
+    <Content Include="Images\Wires\FM1D3L.png" />
+    <Content Include="Images\Wires\FM1D3R.png" />
+    <Content Include="Images\Wires\FM2D0L.png" />
+    <Content Include="Images\Wires\FM2D1L.png" />
+    <Content Include="Images\Wires\FM2D1R.png" />
+    <Content Include="Images\Wires\FM2D2L.png" />
+    <Content Include="Images\Wires\FM2D2R.png" />
+    <Content Include="Images\Wires\FM2D3L.png" />
+    <Content Include="Images\Wires\FM2D3R.png" />
+    <Content Include="Images\Wires\FM3D0L.png" />
+    <Content Include="Images\Wires\XM0D1R.png" />
+    <Content Include="Images\Wires\XM0D2R.png" />
+    <Content Include="Images\Wires\XM0D3R.png" />
+    <Content Include="Images\Wires\XM1D0L.png" />
+    <Content Include="Images\Wires\XM1D1L.png" />
+    <Content Include="Images\Wires\XM1D1R.png" />
+    <Content Include="Images\Wires\XM1D2L.png" />
+    <Content Include="Images\Wires\XM1D2R.png" />
+    <Content Include="Images\Wires\XM1D3L.png" />
+    <Content Include="Images\Wires\XM1D3R.png" />
+    <Content Include="Images\Wires\XM2D0L.png" />
+    <Content Include="Images\Wires\XM2D1L.png" />
+    <Content Include="Images\Wires\XM2D1R.png" />
+    <Content Include="Images\Wires\XM2D2L.png" />
+    <Content Include="Images\Wires\XM2D2R.png" />
+    <Content Include="Images\Wires\XM2D3L.png" />
+    <Content Include="Images\Wires\XM2D3R.png" />
+    <Content Include="Images\Wires\XM3D0L.png" />
+    <Content Include="Images\Channel1.png" />
+    <Content Include="Images\Channel10.png" />
+    <Content Include="Images\Channel11.png" />
+    <Content Include="Images\Channel12.png" />
+    <Content Include="Images\Channel13.png" />
+    <Content Include="Images\Channel14.png" />
+    <Content Include="Images\Channel15.png" />
+    <Content Include="Images\Channel16.png" />
+    <Content Include="Images\Channel2.png" />
+    <Content Include="Images\Channel3.png" />
+    <Content Include="Images\Channel4.png" />
+    <Content Include="Images\Channel5.png" />
+    <Content Include="Images\Channel6.png" />
+    <Content Include="Images\Channel7.png" />
+    <Content Include="Images\Channel8.png" />
+    <Content Include="Images\Channel9.png" />
+    <Content Include="Images\ChannelAll.png" />
+    <Content Include="Images\ControlPanelBackground.png" />
+    <Content Include="Images\FactoryPatches.png" />
+    <Content Include="Images\Filler1.png" />
+    <Content Include="Images\Filler2.png" />
+    <Content Include="Images\GraphDisplayBackground.png" />
+    <Content Include="Images\Manual.png" />
+    <Content Include="Images\MidiSettings.png" />
+    <Content Include="Images\ModFilterMix.png" />
+    <Content Include="Images\ModulatorWheelBackground.png" />
+    <Content Include="Images\ModWheelDepth.png" />
+    <Content Include="Images\ModWheelOff.png" />
+    <Content Include="Images\ModWheelSpeed.png" />
+    <Content Include="Images\Oscillator1.png" />
+    <Content Include="Images\Oscillator10.png" />
+    <Content Include="Images\Oscillator11.png" />
+    <Content Include="Images\Oscillator12.png" />
+    <Content Include="Images\Oscillator2.png" />
+    <Content Include="Images\Oscillator3.png" />
+    <Content Include="Images\Oscillator4.png" />
+    <Content Include="Images\Oscillator5.png" />
+    <Content Include="Images\Oscillator6.png" />
+    <Content Include="Images\Oscillator7.png" />
+    <Content Include="Images\Oscillator8.png" />
+    <Content Include="Images\Oscillator9.png" />
+    <Content Include="Images\OscillatorAMOff.png" />
+    <Content Include="Images\OscillatorAMOn.png" />
+    <Content Include="Images\OscillatorFMOff.png" />
+    <Content Include="Images\OscillatorFMOn.png" />
+    <Content Include="Images\OscillatorFreqOff.png" />
+    <Content Include="Images\OscillatorFreqOn.png" />
+    <Content Include="Images\OscillatorModWheelAM.png" />
+    <Content Include="Images\OscillatorModWheelFinetune.png" />
+    <Content Include="Images\OscillatorModWheelFM.png" />
+    <Content Include="Images\OscillatorModWheelFrequency.png" />
+    <Content Include="Images\OscillatorModWheelOff.png" />
+    <Content Include="Images\OscillatorModWheelPM.png" />
+    <Content Include="Images\OscillatorModWheelVolume.png" />
+    <Content Include="Images\OscillatorPMOff.png" />
+    <Content Include="Images\OscillatorPMOn.png" />
+    <Content Include="Images\PitchEnvelopeBackground.png" />
+    <Content Include="Images\PitchEnvelopeGraphBackground.png" />
+    <Content Include="Images\SelectorAdsrFm.png" />
+    <Content Include="Images\AdsrModA.png" />
+    <Content Include="Images\AdsrModD.png" />
+    <Content Include="Images\AdsrModOff.png" />
+    <Content Include="Images\AdsrModR.png" />
+    <Content Include="Images\AdsrModS.png" />
+    <Content Include="Images\Arrowknob_75.png" />
+    <Content Include="Images\Background.png" />
+    <Content Include="Images\BlackKey.png" />
+    <Content Include="Images\CommonAdsr.png" />
+    <Content Include="Images\Digit0.png" />
+    <Content Include="Images\Digit0Dot.png" />
+    <Content Include="Images\Digit1.png" />
+    <Content Include="Images\Digit1Dot.png" />
+    <Content Include="Images\Digit2.png" />
+    <Content Include="Images\Digit2Dot.png" />
+    <Content Include="Images\Digit3.png" />
+    <Content Include="Images\Digit3Dot.png" />
+    <Content Include="Images\Digit4.png" />
+    <Content Include="Images\Digit4Dot.png" />
+    <Content Include="Images\Digit5.png" />
+    <Content Include="Images\Digit5Dot.png" />
+    <Content Include="Images\Digit6.png" />
+    <Content Include="Images\Digit6Dot.png" />
+    <Content Include="Images\Digit7.png" />
+    <Content Include="Images\Digit7Dot.png" />
+    <Content Include="Images\Digit8.png" />
+    <Content Include="Images\Digit8Dot.png" />
+    <Content Include="Images\Digit9.png" />
+    <Content Include="Images\Digit9Dot.png" />
+    <Content Include="Images\DisplayBackground.png" />
+    <Content Include="Images\Filler.png" />
+    <Content Include="Images\FilterAdsrNegative.png" />
+    <Content Include="Images\FilterAdsrPositive.png" />
+    <Content Include="Images\FilterAmModulator.png" />
+    <Content Include="Images\FilterBackground.png" />
+    <Content Include="Images\FilterButtonBackground.png" />
+    <Content Include="Images\FilterFixed.png" />
+    <Content Include="Images\FilterFmModulator.png" />
+    <Content Include="Images\FilterOff.png" />
+    <Content Include="Images\FilterPmModulator.png" />
+    <Content Include="Images\Wires\HangingWire.png" />
+    <Content Include="Images\ImageSelector.png" />
+    <Content Include="Images\Layout12.png" />
+    <Content Include="Images\Layout4.png" />
+    <Content Include="Images\Layout6.png" />
+    <Content Include="Images\Layout8.png" />
+    <Content Include="Images\LedOff.png" />
+    <Content Include="Images\LedOn.png" />
+    <Content Include="Images\LedYellowOn.png" />
+    <Content Include="Images\LoadFromFile.png" />
+    <Content Include="Images\Logotype.png" />
+    <Content Include="Images\LongButton.png" />
+    <Content Include="Images\ModAll.png" />
+    <Content Include="Images\ModAM.png" />
+    <Content Include="Images\ModFilterButtonBackground.png" />
+    <Content Include="Images\ModFilterGain.png" />
+    <Content Include="Images\ModFilterFreq.png" />
+    <Content Include="Images\ModFilterKeyFollow.png" />
+    <Content Include="Images\ModFilterOff.png" />
+    <Content Include="Images\ModFilterQ.png" />
+    <Content Include="Images\ModFM.png" />
+    <Content Include="Images\ModPM.png" />
+    <Content Include="Images\ModulatorWheelHandle.png" />
+    <Content Include="Images\OscillatorBackground.png" />
+    <Content Include="Images\Oscillator.png" />
+    <Content Include="Images\PedalDown.png" />
+    <Content Include="Images\PedalUp.png" />
+    <Content Include="Images\SaveToFile.png" />
+    <Content Include="Images\Screenshot.png" />
+    <Content Include="Images\SelectADSR.png" />
+    <Content Include="Images\SelectFixFreq.png" />
+    <Content Include="Images\SelectKeyboard.png" />
+    <Content Include="Images\SelectNoise.png" />
+    <Content Include="Images\SelectorAdsrPulse.png" />
+    <Content Include="Images\SelectorViewOff.png" />
+    <Content Include="Images\SelectorViewOn.png" />
+    <Content Include="Images\SelectPedalDown.png" />
+    <Content Include="Images\SelectPedalUp.png" />
+    <Content Include="Images\SelectPulse.png" />
+    <Content Include="Images\SelectRandom.png" />
+    <Content Include="Images\SelectSawDwn.png" />
+    <Content Include="Images\SelectSawUp.png" />
+    <Content Include="Images\SelectSine.png" />
+    <Content Include="Images\SelectSoundOff.png" />
+    <Content Include="Images\SelectSoundOn.png" />
+    <Content Include="Images\SelectSquare.png" />
+    <Content Include="Images\SelectTriangle.png" />
+    <Content Include="Images\SeparateAdsr.png" />
+    <Content Include="Images\Settings.png" />
+    <Content Include="Images\UsingGraphicsCardOff.png" />
+    <Content Include="Images\UsingGraphicsCardOn.png" />
+    <Content Include="Images\VelocityOff.png" />
+    <Content Include="Images\VelocityOn.png" />
+    <Content Include="Images\WhiteKey.png" />
+    <Content Include="Images\Wood.jpg" />
+    <Content Include="Images\XmToFreq.png" />
+    <Content Include="Images\XmToFreqAndSquare.png" />
+    <Content Include="Package.StoreAssociation.xml" />
+    <Content Include="Properties\Default.rd.xml" />
+    <Content Include="Assets\LockScreenLogo.scale-200.png" />
+    <Content Include="Assets\SplashScreen.scale-200.png" />
+    <Content Include="Assets\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\StoreLogo.png" />
+    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="ReadMe.txt" />
+    <Content Include="ToDo.txt" />
+    <Content Include="vc142.pdb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Page Include="AreYouSure.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ChannelSelector.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Error.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FactoryPatches.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MainPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MidiSettings12.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MidiSettings4.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MidiSettings6.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MidiSettings8.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Settings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MathNet.Numerics">
+      <Version>3.20.2</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
+      <Version>6.2.13</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>13.0.1</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Documents\Manual.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="UwpControlsLibrary, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\UwpControlsLibrary\UwpControlsLibrary\bin\x64\Debug\UwpControlsLibrary.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Patches\50 Hz Humming sound.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Patches\CaveDrops.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Patches\Electric bass.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Patches\MorseCode.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Patches\MysteriousOrgan.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Patches\R2D2.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Patches\Wind.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="R2D2.json" />
+    <None Include="SynthLab_TemporaryKey.pfx" />
+  </ItemGroup>
+  <ItemGroup />
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
+    <VisualStudioVersion>14.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
