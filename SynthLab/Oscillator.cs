@@ -652,7 +652,7 @@ namespace SynthLab
                 if (WaveForm == WAVEFORM.NOISE)
                 {
                     // Noise is not to be translated to a certain frequency!
-                    CurrentSample = 0.002 * (random.Next(1000) - 500);
+                    CurrentSample = 0.001 * (random.Next(1000) - 500);
 					mean += CurrentSample;
                 }
                 else if (WaveForm == WAVEFORM.RANDOM)

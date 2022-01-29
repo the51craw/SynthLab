@@ -57,6 +57,7 @@
         <Image x:Name="imgSelectHoldOff" Source="ms-appx:///Images/PedalUp.png" x:FieldModifier="public" Stretch="None" />
         <Image x:Name="imgKnob" Source="ms-appx:///Images/ArrowKnob_75.png" x:FieldModifier="public" Stretch="None" />
         <Image x:Name="imgLedOn" Source="ms-appx:///Images/LedOn.png" x:FieldModifier="public" Stretch="None" />
+        <Image x:Name="imgLedOff" Source="ms-appx:///Images/LedOff.png" x:FieldModifier="public" Stretch="None" />
         <Image x:Name="imgLedYellowOn" Source="ms-appx:///Images/LedYellowOn.png" x:FieldModifier="public" Stretch="None" />
         <Image x:Name="imgOscNumber1" Source="ms-appx:///Images/OscNumbers/1.png" x:FieldModifier="public" Stretch="None" />
         <Image x:Name="imgOscNumber2" Source="ms-appx:///Images/OscNumbers/2.png" x:FieldModifier="public" Stretch="None" />

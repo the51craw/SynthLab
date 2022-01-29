@@ -24,7 +24,7 @@ namespace SynthLab
         public void KeyOn(byte key, int channel, byte velocity)
          {
             Boolean oscillatorWithAcceptedChannelFound = false;
-            bool isDone = false;
+            //bool isDone = false;
 
             if (initDone && AnyOscillatorHasOutput())
             {
@@ -62,7 +62,7 @@ namespace SynthLab
                         int poly = dispatcher[channel].TryAssignPoly(key);
                         if (poly > -1)
                         {
-                            for (int osc = 0; osc < Patch.OscillatorCount && !isDone; osc++)
+                            for (int osc = 0; osc < Patch.OscillatorCount/* && !isDone*/; osc++)
                             {
                                 if (Patch.Oscillators[poly][osc].IsOutput() &&
                                     Patch.Oscillators[poly][osc].MidiChannel == channel)
@@ -78,7 +78,7 @@ namespace SynthLab
                                     FrameServer.PolyServers[poly].IsOn = true;
                                     //Patch.Oscillators[poly][osc].Adsr.Pulse.PulseStart(key);
                                     Patch.Oscillators[poly][osc].Adsr.AdsrStart(key);
-                                    isDone = true;
+                                    //isDone = true;
                                 }
                             }
                             if (!oscillatorWithAcceptedChannelFound)
