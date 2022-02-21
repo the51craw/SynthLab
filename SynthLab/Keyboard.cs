@@ -22,7 +22,7 @@ namespace SynthLab
         public Double FrequencyFactor;
 
         public void KeyOn(byte key, int channel, byte velocity)
-         {
+        {
             Boolean oscillatorWithAcceptedChannelFound = false;
             //bool isDone = false;
 
@@ -65,7 +65,8 @@ namespace SynthLab
                             for (int osc = 0; osc < Patch.OscillatorCount/* && !isDone*/; osc++)
                             {
                                 if (Patch.Oscillators[poly][osc].IsOutput() &&
-                                    Patch.Oscillators[poly][osc].MidiChannel == channel)
+                                    (Patch.Oscillators[poly][osc].MidiChannel == channel
+                                    || Patch.Oscillators[poly][osc].MidiChannel == 16))
                                 {
                                     oscillatorWithAcceptedChannelFound = true;
                                     Patch.Oscillators[poly][osc].PolyId = poly;
@@ -132,7 +133,9 @@ namespace SynthLab
                     {
                         for (int osc = 0; osc < Patch.OscillatorCount; osc++)
                         {
-                            if (Patch.Oscillators[poly][osc].IsOutput() && Patch.Oscillators[poly][osc].MidiChannel == channel
+                            if (Patch.Oscillators[poly][osc].IsOutput() 
+                                && (Patch.Oscillators[poly][osc].MidiChannel == channel
+                                    || Patch.Oscillators[poly][osc].MidiChannel == 16)
                                 && Patch.Oscillators[poly][osc].Key == key)
                             {
                                 if (!dispatcher[channel].PedalHold)
@@ -148,26 +151,6 @@ namespace SynthLab
                         }
                     }
                 }
-                //if (initDone && dispatcher.NumberOfOscillatorsInUse() == 0 && osc < Patch.OscillatorCount)
-                //{
-                //    switch (Patch.Layout)
-                //    {
-                //        case Layouts.FOUR_OSCILLATORS:
-                //        case Layouts.SIX_OSCILLATORS:
-                //        case Layouts.EIGHT_OSCILLATORS:
-                //            if (((Rotator)((CompoundControl)FilterGUIs[osc]).SubControls.ControlsList[(int)FilterControls.FILTER_FUNCTION]).Selection > 0)
-                //            {
-                //                UpdateFilterGui(osc);
-                //            }
-                //            break;
-                //        case Layouts.TWELVE_OSCILLATORS:
-                //            if (((Rotator)FilterGUIs[0].SubControls.ControlsList[(int)FilterControls.FILTER_FUNCTION]).Selection > 0)
-                //            {
-                //                UpdateFilterGui(0);
-                //            }
-                //            break;
-                //    }
-                //}
             }
         }
 

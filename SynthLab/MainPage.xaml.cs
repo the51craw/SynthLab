@@ -44,7 +44,7 @@ namespace SynthLab
 
         private const int rowCount = 3;
         private const int colCount = 4;
-        private Controls Controls;
+        public Controls Controls;
         public CompoundControl ControlPanel;
 
         private Boolean oscillatorsCreated = false;
@@ -57,6 +57,7 @@ namespace SynthLab
         private Boolean windowShapeIsGood = false;
         public Boolean usingGraphicsCard = false;
         public Boolean graphicsCardAvailable = false;
+        public MidiSettings midiSettings;
 
         [JsonIgnore]
         public Canvas adsrCanvas;
@@ -213,8 +214,8 @@ namespace SynthLab
             }
 
             // Create dispatchers:
-            dispatcher = new KeyDispatcher[16];
-            for (int ch = 0; ch < 16; ch++)
+            dispatcher = new KeyDispatcher[17];
+            for (int ch = 0; ch < 17; ch++)
             {
                 dispatcher[ch] = new KeyDispatcher(this, Patch.Polyphony);
             }
@@ -310,6 +311,8 @@ namespace SynthLab
             initDone = true;
             //GCSupressor.SupressPatch(Patch);
             FrameServer.StartAudio();
+
+            midiSettings = new MidiSettings(this, Patch);
         }
 
         // When app size is changed, all controls must also be resized,

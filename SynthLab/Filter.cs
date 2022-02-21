@@ -25,8 +25,17 @@ namespace SynthLab
 
         [JsonIgnore]
         public MainPage mainPage;
+
+        /// <summary>
+        /// The filter applies to fftData.
+        /// For a smoother sound fftData is mixed with three previous fftData.
+        /// Those are ramped down with age, so that the oldest sample is 0.
+        /// 
+        /// </summary>
         [JsonIgnore]
         public Complex[] fftData;
+        [JsonIgnore]
+        public Complex[] fftHistory;
 
         [JsonIgnore]
         public Oscillator oscillator;
@@ -154,7 +163,9 @@ namespace SynthLab
                     //    break;
                 }
                 //if (mainPage.Patch.Oscillators[0][Id].Adsr)
-                for (int i = 0; i < fftData.Length / 2; i++)
+                fftData[0] = new Complex(0, 0);
+                fftData[fftData.Length / 2] = new Complex(0, 0);
+                for (int i = 1; i < (fftData.Length / 2) - 1; i++)
                 {
                     //if (mainPage.Patch.Oscillators[0][Id].AM_Modulator != null && 
                     //    ((Rotator)mainPage.FilterGUIs[Id].SubControls.ControlsList[(int)FilterControls.FREQUENCY_CENTER]).Value.FilterFunction == (int)FilterFunction.AM_MODULATOR)
@@ -175,11 +186,11 @@ namespace SynthLab
                     {
                         fftData[i] = new Complex(fftData[i].Real * y, fftData[i].Imaginary * y);
                         fftData[fftData.Length - i - 1] = new Complex(fftData[fftData.Length - i - 1].Real * y, fftData[fftData.Length - i - 1].Imaginary * y);
-                        if (i < fftData.Length / 4)
-                        {
-                            fftData[i] *= (double)i / (double)(fftData.Length / 4);
-                            fftData[fftData.Length - i - 1] *= (double)i / (double)(fftData.Length / 4);
-                        }
+                        //if (i < fftData.Length / 4)
+                        //{
+                        //    fftData[i] *= (double)i / (double)(fftData.Length / 4);
+                        //    fftData[fftData.Length - i - 1] *= (double)i / (double)(fftData.Length / 4);
+                        //}
                         //fftData[mainPage.SampleCount / 2 - i - 1] = 
                         //    new Complex(fftData[mainPage.SampleCount / 2 - i - 1].Real * y, fftData[mainPage.SampleCount / 2 - i - 1].Imaginary * y);
                     }
@@ -203,7 +214,7 @@ namespace SynthLab
 
                 for (int i = 0; i < fftData.Length; i++)
                 {
-                    result[i] = fftData[i].Real * (1 + Gain) + waveData[i] * Mix / 127.0;
+                    result[i] = fftData[i].Real * (1 + Gain / 32) + waveData[i] * Mix / 127.0;
                 }
             }
             return result;

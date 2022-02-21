@@ -329,8 +329,8 @@ namespace SynthLab
             allowGuiUpdates = false;
             Patch.Polyphony = polyphony;
             Patch.CreateOscillators(this);
-            dispatcher = new KeyDispatcher[16];
-            for (int ch = 0; ch < 16; ch++)
+            dispatcher = new KeyDispatcher[17];
+            for (int ch = 0; ch < 17; ch++)
             {
                 dispatcher[ch] = new KeyDispatcher(this, Patch.Polyphony);
             }

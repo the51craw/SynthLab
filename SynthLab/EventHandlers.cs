@@ -463,7 +463,7 @@ namespace SynthLab
                     }
                     else
                     {
-                        Trace.WriteLine("Skipped CC message " + msg);
+                        Trace.WriteLine("Skipped CC message " + msg[1] + " " +  msg[2]);
                     }
                 }
                 else if (receivedMidiMessage.Type == MidiMessageType.PitchBendChange)
@@ -473,9 +473,20 @@ namespace SynthLab
                         fadjust = rawData[2];
                     });
                 }
+                else if (receivedMidiMessage.Type == MidiMessageType.ChannelPressure) // Also called 'After touch'
+                {
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    {
+                        ((VerticalSlider)Controls.ControlsList[(int)OtherControls.MODULATION_WHEEL]).ControlGraphicsFollowsValue = false;
+                        ((VerticalSlider)Controls.ControlsList[(int)OtherControls.MODULATION_WHEEL]).Value = rawData[1];
+                        ((VerticalSlider)Controls.ControlsList[(int)OtherControls.MODULATION_WHEEL]).ControlGraphicsFollowsValue = true;
+                        adjust = rawData[1];
+                        FollowModulationWheel((int)rawData[1]);
+                    });
+                }
                 else
                 {
-                    Trace.WriteLine("Skipped message " + msg);
+                    Trace.WriteLine("Skipped message " + msg[0] + " " + msg[1]);
                 }
             }
         }

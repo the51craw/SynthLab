@@ -13,8 +13,9 @@
     SecondaryButtonClick="ContentDialog_SecondaryButtonClick"
     Background="#ffe1c7aa">
 
-    <Grid x:FieldModifier="public" MinWidth="1468">
+    <Grid x:FieldModifier="public" >
         <!-- Images for copying source -->
+        <Image x:Name="imgChannelAll" Source="ms-appx:///Images/ChannelAll.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" />
         <Image x:Name="imgChannel1" Source="ms-appx:///Images/Channel1.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" />
         <Image x:Name="imgChannel2" Source="ms-appx:///Images/Channel2.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" />
         <Image x:Name="imgChannel3" Source="ms-appx:///Images/Channel3.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" />
@@ -31,111 +32,171 @@
         <Image x:Name="imgChannel14" Source="ms-appx:///Images/Channel14.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" />
         <Image x:Name="imgChannel15" Source="ms-appx:///Images/Channel15.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" />
         <Image x:Name="imgChannel16" Source="ms-appx:///Images/Channel16.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" />
-        <!--<Image x:Name="imgChannelAll" Source="ms-appx:///Images/ChannelAll.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" />-->
         <Image x:Name="imgVelocityOn" Source="ms-appx:///Images/VelocityOn.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" />
         <Image x:Name="imgVelocityOff" Source="ms-appx:///Images/VelocityOff.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" />
         <!-- Main grid -->
-        <Grid x:Name="main" Width="1468" Height="78" Visibility="Visible" >
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="26" />
-                    <RowDefinition Height="26" />
-                    <RowDefinition Height="26" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="95"/>
-                    <ColumnDefinition Width="79" />
-                    <ColumnDefinition Width="193" />
-                    <ColumnDefinition Width="95"/>
-                    <ColumnDefinition Width="79" />
-                    <ColumnDefinition Width="193" />
-                    <ColumnDefinition Width="95"/>
-                    <ColumnDefinition Width="79" />
-                    <ColumnDefinition Width="193" />
-                    <ColumnDefinition Width="95"/>
-                    <ColumnDefinition Width="79" />
-                    <ColumnDefinition Width="193" />
-                </Grid.ColumnDefinitions>
-            <Image Grid.Row="0" Grid.Column="0"  Source="ms-appx:///Images/Oscillator1.png"  Stretch="None" Tapped="ChannelTapped" Tag="0"  />
-            <Image Grid.Row="0" Grid.Column="3"  Source="ms-appx:///Images/Oscillator2.png"  Stretch="None" Tapped="ChannelTapped" Tag="1"  />
-            <Image Grid.Row="0" Grid.Column="6"  Source="ms-appx:///Images/Oscillator3.png"  Stretch="None" Tapped="ChannelTapped" Tag="2"  />
-            <Image Grid.Row="0" Grid.Column="9"  Source="ms-appx:///Images/Oscillator4.png"  Stretch="None" Tapped="ChannelTapped" Tag="3"  />
-            <Image Grid.Row="1" Grid.Column="0"  Source="ms-appx:///Images/Oscillator5.png"  Stretch="None" Tapped="ChannelTapped" Tag="4"  />
-            <Image Grid.Row="1" Grid.Column="3"  Source="ms-appx:///Images/Oscillator6.png"  Stretch="None" Tapped="ChannelTapped" Tag="5"  />
-            <Image Grid.Row="1" Grid.Column="6"  Source="ms-appx:///Images/Oscillator7.png"  Stretch="None" Tapped="ChannelTapped" Tag="6"  />
-            <Image Grid.Row="1" Grid.Column="9"  Source="ms-appx:///Images/Oscillator8.png"  Stretch="None" Tapped="ChannelTapped" Tag="7"  />
-            <Image Grid.Row="2" Grid.Column="0"  Source="ms-appx:///Images/Oscillator9.png"  Stretch="None" Tapped="ChannelTapped" Tag="8"  />
-            <Image Grid.Row="2" Grid.Column="3"  Source="ms-appx:///Images/Oscillator10.png" Stretch="None" Tapped="ChannelTapped" Tag="9"  />
-            <Image Grid.Row="2" Grid.Column="6"  Source="ms-appx:///Images/Oscillator11.png" Stretch="None" Tapped="ChannelTapped" Tag="10" />
-            <Image Grid.Row="2" Grid.Column="9"  Source="ms-appx:///Images/Oscillator12.png" Stretch="None" Tapped="ChannelTapped" Tag="11" />
-            <Image Grid.Row="0" Grid.Column="1"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="0"  x:Name="ch1"  />
-            <Image Grid.Row="0" Grid.Column="4"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="1"  x:Name="ch2"  />
-            <Image Grid.Row="0" Grid.Column="7"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="2"  x:Name="ch3"  />
-            <Image Grid.Row="0" Grid.Column="10" Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="3"  x:Name="ch4"  />
-            <Image Grid.Row="1" Grid.Column="1"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="4"  x:Name="ch5"  />
-            <Image Grid.Row="1" Grid.Column="4"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="5"  x:Name="ch6"  />
-            <Image Grid.Row="1" Grid.Column="7"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="6"  x:Name="ch7"  />
-            <Image Grid.Row="1" Grid.Column="10" Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="7"  x:Name="ch8"  />
-            <Image Grid.Row="2" Grid.Column="1"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="8"  x:Name="ch9"  />
-            <Image Grid.Row="2" Grid.Column="4"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="9"  x:Name="ch10" />
-            <Image Grid.Row="2" Grid.Column="7"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="10" x:Name="ch11" />
-            <Image Grid.Row="2" Grid.Column="10" Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="11" x:Name="ch12" />
-            <Image Grid.Row="0" Grid.Column="2" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityTapped" Tag="0" x:Name="vs1" />
-                <Image Grid.Row="0" Grid.Column="5" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityTapped" Tag="1" x:Name="vs2" />
-                <Image Grid.Row="0" Grid.Column="8" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityTapped" Tag="2" x:Name="vs3" />
-                <Image Grid.Row="0" Grid.Column="11" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityTapped" Tag="3" x:Name="vs4" />
-                <Image Grid.Row="1" Grid.Column="2" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityTapped" Tag="4" x:Name="vs5" />
-                <Image Grid.Row="1" Grid.Column="5" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityTapped" Tag="5" x:Name="vs6" />
-                <Image Grid.Row="1" Grid.Column="8" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityTapped" Tag="6" x:Name="vs7" />
-                <Image Grid.Row="1" Grid.Column="11" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityTapped" Tag="7" x:Name="vs8" />
-                <Image Grid.Row="2" Grid.Column="2" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityTapped" Tag="8" x:Name="vs9" />
-                <Image Grid.Row="2" Grid.Column="5" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityTapped" Tag="9" x:Name="vs10" />
-                <Image Grid.Row="2" Grid.Column="8" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityTapped" Tag="10" x:Name="vs11" />
-                <Image Grid.Row="2" Grid.Column="11" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityTapped" Tag="11" x:Name="vs12" />
-            </Grid>
-        <!-- Channels grid -->
-            <Grid x:Name="channels" Visibility="Collapsed" >
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="26" />
-                    <RowDefinition Height="26" />
-                    <RowDefinition Height="26" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="51"/>
-                <ColumnDefinition Width="79"/>
-                <ColumnDefinition Width="79" />
-                <ColumnDefinition Width="79" />
-                <ColumnDefinition Width="79" />
-                <ColumnDefinition Width="79" />
-                <ColumnDefinition Width="79"/>
-                <ColumnDefinition Width="79" />
-                <ColumnDefinition Width="79" />
-                <ColumnDefinition Width="79"/>
-                <ColumnDefinition Width="79" />
-                <ColumnDefinition Width="79" />
-                <ColumnDefinition Width="79" />
-                <ColumnDefinition Width="79" />
-                <ColumnDefinition Width="79"/>
-                <ColumnDefinition Width="79" />
-                <ColumnDefinition Width="79" />
-                <ColumnDefinition Width="51"/>
+        <Grid Width="905" Height="312" Visibility="Visible" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="99" />
+                <RowDefinition Height="7" />
+                <RowDefinition Height="99" />
+                <RowDefinition Height="7" />
+                <RowDefinition Height="99" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="221" />
+                <ColumnDefinition Width="7" />
+                <ColumnDefinition Width="221" />
+                <ColumnDefinition Width="7" />
+                <ColumnDefinition Width="221" />
+                <ColumnDefinition Width="7" />
+                <ColumnDefinition Width="221" />
             </Grid.ColumnDefinitions>
-                <!--<Image Grid.Row="0" Grid.Column="1" Tag="-1" Source="ms-appx:///Images/ChannelAll.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />-->
-                <Image Grid.Row="1" Grid.Column="1" Tag="0" Source="ms-appx:///Images/Channel1.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
-                <Image Grid.Row="1" Grid.Column="2" Tag="1" Source="ms-appx:///Images/Channel2.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
-                <Image Grid.Row="1" Grid.Column="3" Tag="2" Source="ms-appx:///Images/Channel3.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
-                <Image Grid.Row="1" Grid.Column="4" Tag="3" Source="ms-appx:///Images/Channel4.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
-                <Image Grid.Row="1" Grid.Column="5" Tag="4" Source="ms-appx:///Images/Channel5.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
-                <Image Grid.Row="1" Grid.Column="6" Tag="5" Source="ms-appx:///Images/Channel6.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
-                <Image Grid.Row="1" Grid.Column="7" Tag="6" Source="ms-appx:///Images/Channel7.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
-                <Image Grid.Row="1" Grid.Column="8" Tag="7" Source="ms-appx:///Images/Channel8.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
-                <Image Grid.Row="1" Grid.Column="9" Tag="8" Source="ms-appx:///Images/Channel9.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
-                <Image Grid.Row="1" Grid.Column="10" Tag="9" Source="ms-appx:///Images/Channel10.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
-                <Image Grid.Row="1" Grid.Column="11" Tag="10" Source="ms-appx:///Images/Channel11.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
-                <Image Grid.Row="1" Grid.Column="12" Tag="11" Source="ms-appx:///Images/Channel12.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
-                <Image Grid.Row="1" Grid.Column="13" Tag="12" Source="ms-appx:///Images/Channel13.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
-                <Image Grid.Row="1" Grid.Column="14" Tag="13" Source="ms-appx:///Images/Channel14.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
-                <Image Grid.Row="1" Grid.Column="15" Tag="14" Source="ms-appx:///Images/Channel15.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
-                <Image Grid.Row="1" Grid.Column="16" Tag="15" Source="ms-appx:///Images/Channel16.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+            <Image Grid.Row="0" Grid.Column="0" Source="ms-appx:///Images/MidiSettingBackground.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" />
+            <Image Grid.Row="0" Grid.Column="2" Source="ms-appx:///Images/MidiSettingBackground.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" />
+            <Image Grid.Row="0" Grid.Column="4" Source="ms-appx:///Images/MidiSettingBackground.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" />
+            <Image Grid.Row="0" Grid.Column="6" Source="ms-appx:///Images/MidiSettingBackground.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" />
+            <Image Grid.Row="2" Grid.Column="0" Source="ms-appx:///Images/MidiSettingBackground.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" />
+            <Image Grid.Row="2" Grid.Column="2" Source="ms-appx:///Images/MidiSettingBackground.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" />
+            <Image Grid.Row="2" Grid.Column="4" Source="ms-appx:///Images/MidiSettingBackground.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" />
+            <Image Grid.Row="2" Grid.Column="6" Source="ms-appx:///Images/MidiSettingBackground.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" />
+            <Image Grid.Row="4" Grid.Column="0" Source="ms-appx:///Images/MidiSettingBackground.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" />
+            <Image Grid.Row="4" Grid.Column="2" Source="ms-appx:///Images/MidiSettingBackground.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" />
+            <Image Grid.Row="4" Grid.Column="4" Source="ms-appx:///Images/MidiSettingBackground.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" />
+            <Image Grid.Row="4" Grid.Column="6" Source="ms-appx:///Images/MidiSettingBackground.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" />
         </Grid>
+        <Grid x:Name="main" Width="905" Height="312" Visibility="Visible" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="14" />
+                <RowDefinition Height="26" />
+                <RowDefinition Height="19" />
+                <RowDefinition Height="26" />
+                <RowDefinition Height="35" />
+                <RowDefinition Height="26" />
+                <RowDefinition Height="19" />
+                <RowDefinition Height="26" />
+                <RowDefinition Height="35" />
+                <RowDefinition Height="26" />
+                <RowDefinition Height="19" />
+                <RowDefinition Height="26" />
+                <RowDefinition Height="35" />
+                <RowDefinition Height="26" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="14"/>
+                <ColumnDefinition Width="95" />
+                <ColumnDefinition Width="19"/>
+                <ColumnDefinition Width="79"/>
+                <ColumnDefinition Width="35"/>
+                <ColumnDefinition Width="95" />
+                <ColumnDefinition Width="19"/>
+                <ColumnDefinition Width="79"/>
+                <ColumnDefinition Width="35"/>
+                <ColumnDefinition Width="95" />
+                <ColumnDefinition Width="19"/>
+                <ColumnDefinition Width="79"/>
+                <ColumnDefinition Width="35"/>
+                <ColumnDefinition Width="95" />
+                <ColumnDefinition Width="19"/>
+                <ColumnDefinition Width="79"/>
+                <ColumnDefinition Width="14"/>
+            </Grid.ColumnDefinitions>
+            <Image Grid.Row="1" Grid.Column="1"  Source="ms-appx:///Images/Oscillator1.png"  Stretch="None" Tapped="ChannelTapped" Tag="0"  />
+            <Image Grid.Row="1" Grid.Column="5"  Source="ms-appx:///Images/Oscillator2.png"  Stretch="None" Tapped="ChannelTapped" Tag="1"  />
+            <Image Grid.Row="1" Grid.Column="9"  Source="ms-appx:///Images/Oscillator3.png"  Stretch="None" Tapped="ChannelTapped" Tag="2"  />
+            <Image Grid.Row="1" Grid.Column="13"  Source="ms-appx:///Images/Oscillator4.png"  Stretch="None" Tapped="ChannelTapped" Tag="3"  />
+            <Image Grid.Row="5" Grid.Column="1"  Source="ms-appx:///Images/Oscillator5.png"  Stretch="None" Tapped="ChannelTapped" Tag="4"  />
+            <Image Grid.Row="5" Grid.Column="5"  Source="ms-appx:///Images/Oscillator6.png"  Stretch="None" Tapped="ChannelTapped" Tag="5"  />
+            <Image Grid.Row="5" Grid.Column="9"  Source="ms-appx:///Images/Oscillator7.png"  Stretch="None" Tapped="ChannelTapped" Tag="6"  />
+            <Image Grid.Row="5" Grid.Column="13"  Source="ms-appx:///Images/Oscillator8.png"  Stretch="None" Tapped="ChannelTapped" Tag="7"  />
+            <Image Grid.Row="9" Grid.Column="1"  Source="ms-appx:///Images/Oscillator9.png"  Stretch="None" Tapped="ChannelTapped" Tag="8"  />
+            <Image Grid.Row="9" Grid.Column="5"  Source="ms-appx:///Images/Oscillator10.png" Stretch="None" Tapped="ChannelTapped" Tag="9"  />
+            <Image Grid.Row="9" Grid.Column="9"  Source="ms-appx:///Images/Oscillator11.png" Stretch="None" Tapped="ChannelTapped" Tag="10" />
+            <Image Grid.Row="9" Grid.Column="13"  Source="ms-appx:///Images/Oscillator12.png" Stretch="None" Tapped="ChannelTapped" Tag="11" />
+            <Image Grid.Row="1" Grid.Column="3"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="0"  x:Name="ch1"  />
+            <Image Grid.Row="1" Grid.Column="7"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="1"  x:Name="ch2"  />
+            <Image Grid.Row="1" Grid.Column="11"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="2"  x:Name="ch3"  />
+            <Image Grid.Row="1" Grid.Column="15" Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="3"  x:Name="ch4"  />
+            <Image Grid.Row="5" Grid.Column="3"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="4"  x:Name="ch5"  />
+            <Image Grid.Row="5" Grid.Column="7"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="5"  x:Name="ch6"  />
+            <Image Grid.Row="5" Grid.Column="11"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="6"  x:Name="ch7"  />
+            <Image Grid.Row="5" Grid.Column="15" Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="7"  x:Name="ch8"  />
+            <Image Grid.Row="9" Grid.Column="3"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="8"  x:Name="ch9"  />
+            <Image Grid.Row="9" Grid.Column="7"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="9"  x:Name="ch10" />
+            <Image Grid.Row="9" Grid.Column="11"  Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="10" x:Name="ch11" />
+            <Image Grid.Row="9" Grid.Column="15" Source="ms-appx:///Images/ChannelAll.png"   Stretch="None" Tapped="ChannelTapped" Tag="11" x:Name="ch12" />
+            <Image Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOn.png" Stretch="None" Tapped="VelocityOnTapped" Tag="0" x:Name="vsOn1" />
+            <Image Grid.Row="3" Grid.Column="5" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOn.png" Stretch="None" Tapped="VelocityOnTapped" Tag="1" x:Name="vsOn2" />
+            <Image Grid.Row="3" Grid.Column="9" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOn.png" Stretch="None" Tapped="VelocityOnTapped" Tag="2" x:Name="vsOn3" />
+            <Image Grid.Row="3" Grid.Column="13" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOn.png" Stretch="None" Tapped="VelocityOnTapped" Tag="3" x:Name="vsOn4" />
+            <Image Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOn.png" Stretch="None" Tapped="VelocityOnTapped" Tag="4" x:Name="vsOn5" />
+            <Image Grid.Row="7" Grid.Column="5" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOn.png" Stretch="None" Tapped="VelocityOnTapped" Tag="5" x:Name="vsOn6" />
+            <Image Grid.Row="7" Grid.Column="9" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOn.png" Stretch="None" Tapped="VelocityOnTapped" Tag="6" x:Name="vsOn7" />
+            <Image Grid.Row="7" Grid.Column="13" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOn.png" Stretch="None" Tapped="VelocityOnTapped" Tag="7" x:Name="vsOn8" />
+            <Image Grid.Row="11" Grid.Column="1" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOn.png" Stretch="None" Tapped="VelocityOnTapped" Tag="8" x:Name="vsOn9" />
+            <Image Grid.Row="11" Grid.Column="5" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOn.png" Stretch="None" Tapped="VelocityOnTapped" Tag="9" x:Name="vsOn10" />
+            <Image Grid.Row="11" Grid.Column="9" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOn.png" Stretch="None" Tapped="VelocityOnTapped" Tag="10" x:Name="vsOn11" />
+            <Image Grid.Row="11" Grid.Column="13" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOn.png" Stretch="None" Tapped="VelocityOnTapped" Tag="11" x:Name="vsOn12" />
+            <Image Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityOffTapped" Tag="0" x:Name="vsOff1" />
+            <Image Grid.Row="3" Grid.Column="5" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityOffTapped" Tag="1" x:Name="vsOff2" />
+            <Image Grid.Row="3" Grid.Column="9" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityOffTapped" Tag="2" x:Name="vsOff3" />
+            <Image Grid.Row="3" Grid.Column="13" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityOffTapped" Tag="3" x:Name="vsOff4" />
+            <Image Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityOffTapped" Tag="4" x:Name="vsOff5" />
+            <Image Grid.Row="7" Grid.Column="5" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityOffTapped" Tag="5" x:Name="vsOff6" />
+            <Image Grid.Row="7" Grid.Column="9" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityOffTapped" Tag="6" x:Name="vsOff7" />
+            <Image Grid.Row="7" Grid.Column="13" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityOffTapped" Tag="7" x:Name="vsOff8" />
+            <Image Grid.Row="11" Grid.Column="1" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityOffTapped" Tag="8" x:Name="vsOff9" />
+            <Image Grid.Row="11" Grid.Column="5" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityOffTapped" Tag="9" x:Name="vsOff10" />
+            <Image Grid.Row="11" Grid.Column="9" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityOffTapped" Tag="10" x:Name="vsOff11" />
+            <Image Grid.Row="11" Grid.Column="13" Grid.ColumnSpan="3" Source="ms-appx:///Images/VelocityOff.png" Stretch="None" Tapped="VelocityOffTapped" Tag="11" x:Name="vsOff12" />
+        </Grid>
+        <!-- Channels grid -->
+        <Grid x:Name="channels" />
+        <!--<Grid x:Name="channels" Visibility="Collapsed" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="26" />
+                <RowDefinition Height="26" />
+                <RowDefinition Height="26" />
+                <RowDefinition Height="26" />
+                <RowDefinition Height="26" />
+                <RowDefinition Height="26" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="51"/>
+            <ColumnDefinition Width="79"/>
+            <ColumnDefinition Width="79" />
+            <ColumnDefinition Width="79" />
+            <ColumnDefinition Width="79" />
+            <ColumnDefinition Width="79" />
+            <ColumnDefinition Width="79"/>
+            <ColumnDefinition Width="79" />
+            <ColumnDefinition Width="79" />
+            <ColumnDefinition Width="79"/>
+            <ColumnDefinition Width="79" />
+            <ColumnDefinition Width="79" />
+            <ColumnDefinition Width="79" />
+            <ColumnDefinition Width="79" />
+            <ColumnDefinition Width="79"/>
+            <ColumnDefinition Width="79" />
+            <ColumnDefinition Width="79" />
+            <ColumnDefinition Width="51"/>
+        </Grid.ColumnDefinitions>
+            <Image Grid.Row="1" Grid.Column="1" Tag="0" Source="ms-appx:///Images/Channel1.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+            <Image Grid.Row="1" Grid.Column="2" Tag="1" Source="ms-appx:///Images/Channel2.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+            <Image Grid.Row="1" Grid.Column="3" Tag="2" Source="ms-appx:///Images/Channel3.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+            <Image Grid.Row="1" Grid.Column="4" Tag="3" Source="ms-appx:///Images/Channel4.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+            <Image Grid.Row="1" Grid.Column="5" Tag="4" Source="ms-appx:///Images/Channel5.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+            <Image Grid.Row="1" Grid.Column="6" Tag="5" Source="ms-appx:///Images/Channel6.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+            <Image Grid.Row="1" Grid.Column="7" Tag="6" Source="ms-appx:///Images/Channel7.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+            <Image Grid.Row="1" Grid.Column="8" Tag="7" Source="ms-appx:///Images/Channel8.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+            <Image Grid.Row="1" Grid.Column="9" Tag="8" Source="ms-appx:///Images/Channel9.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+            <Image Grid.Row="1" Grid.Column="10" Tag="9" Source="ms-appx:///Images/Channel10.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+            <Image Grid.Row="1" Grid.Column="11" Tag="10" Source="ms-appx:///Images/Channel11.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+            <Image Grid.Row="1" Grid.Column="12" Tag="11" Source="ms-appx:///Images/Channel12.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+            <Image Grid.Row="1" Grid.Column="13" Tag="12" Source="ms-appx:///Images/Channel13.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+            <Image Grid.Row="1" Grid.Column="14" Tag="13" Source="ms-appx:///Images/Channel14.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+            <Image Grid.Row="1" Grid.Column="15" Tag="14" Source="ms-appx:///Images/Channel15.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+            <Image Grid.Row="1" Grid.Column="16" Tag="15" Source="ms-appx:///Images/Channel16.png" x:FieldModifier="public" Stretch="None" Tapped="ChannelSelected" />
+        </Grid>-->
     </Grid>
 </ContentDialog>

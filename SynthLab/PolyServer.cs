@@ -72,10 +72,11 @@ namespace SynthLab
             for (int osc = 0; osc < mainPage.Patch.OscillatorCount; osc++)
             {
                 if (mainPage.Patch.Oscillators[poly][osc] != null && mainPage.Patch.Oscillators[poly][osc].Volume > 0
-                    && mainPage.Patch.Oscillators[poly][osc].MidiChannel == channel)
+                    && (mainPage.Patch.Oscillators[poly][osc].MidiChannel == channel
+                    || mainPage.Patch.Oscillators[poly][osc].MidiChannel == 16))
                 {
-                    // Create sound from this oscillator:
-                    mainPage.Patch.Oscillators[poly][osc].GenerateAudioData(requestedNumberOfSamples);
+                // Create sound from this oscillator:
+                mainPage.Patch.Oscillators[poly][osc].GenerateAudioData(requestedNumberOfSamples);
 
                     for (int i = 0; i < requestedNumberOfSamples; i++)
                     {

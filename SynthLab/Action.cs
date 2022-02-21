@@ -562,29 +562,30 @@ namespace SynthLab
                         //    }
                         //    break;
                         case (int)ControlPanelControls.MIDI_SETTINGS:
-                            switch (Patch.Layout)
-                            {
-                                case Layouts.FOUR_OSCILLATORS:
-                                    MidiSettings4 midiSettings4 = new MidiSettings4();
-                                    midiSettings4.Setup(Patch);
-                                    await midiSettings4.ShowAsync();
-                                    break;
-                                case Layouts.SIX_OSCILLATORS:
-                                    MidiSettings6 midiSettings6 = new MidiSettings6();
-                                    midiSettings6.Setup(Patch);
-                                    await midiSettings6.ShowAsync();
-                                    break;
-                                case Layouts.EIGHT_OSCILLATORS:
-                                    MidiSettings8 midiSettings8 = new MidiSettings8();
-                                    midiSettings8.Setup(Patch);
-                                    await midiSettings8.ShowAsync();
-                                    break;
-                                case Layouts.TWELVE_OSCILLATORS:
-                                    MidiSettings12 midiSettings12 = new MidiSettings12();
-                                    midiSettings12.Setup(Patch);
-                                    await midiSettings12.ShowAsync();
-                                    break;
-                            }
+                            await midiSettings.ShowAsync();
+                            //switch (Patch.Layout)
+                            //{
+                            //    case Layouts.FOUR_OSCILLATORS:
+                            //        MidiSettings4 midiSettings4 = new MidiSettings4();
+                            //        midiSettings4.Setup(Patch);
+                            //        await midiSettings4.ShowAsync();
+                            //        break;
+                            //    case Layouts.SIX_OSCILLATORS:
+                            //        MidiSettings6 midiSettings6 = new MidiSettings6();
+                            //        midiSettings6.Setup(Patch);
+                            //        await midiSettings6.ShowAsync();
+                            //        break;
+                            //    case Layouts.EIGHT_OSCILLATORS:
+                            //        MidiSettings8 midiSettings8 = new MidiSettings8();
+                            //        midiSettings8.Setup(Patch);
+                            //        await midiSettings8.ShowAsync();
+                            //        break;
+                            //    case Layouts.TWELVE_OSCILLATORS:
+                            //        MidiSettings midiSettings = new MidiSettings(this);
+                            //        midiSettings.Setup(Patch);
+                            //        await midiSettings.ShowAsync();
+                            //        break;
+                            //}
                             break;
                         case (int)ControlPanelControls.SETTINGS:
                             settings.Polyphony = Patch.Polyphony;

@@ -103,7 +103,7 @@ namespace SynthLab
                     }
 
                     // Generate and add together audio data for all channels and pressed keys:
-                    for (int ch = 0; ch < 16; ch++)
+                    for (int ch = 0; ch < 17; ch++)
                     {
                         for (int poly = 0; poly < mainPage.Patch.Polyphony; poly++)
                         {

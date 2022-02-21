@@ -151,6 +151,10 @@
     <Compile Include="FileHandling.cs" />
     <Compile Include="Filter.cs" />
     <Compile Include="GUI.cs" />
+    <Compile Include="MidiIn.cs" />
+    <Compile Include="MidiSettings.xaml.cs">
+      <DependentUpon>MidiSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Modulation.cs" />
     <Compile Include="OscillatorWaveforms.cs" />
     <Compile Include="Settings.xaml.cs">
@@ -166,19 +170,6 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="EventHandlers.cs" />
-    <Compile Include="MidiIn.cs" />
-    <Compile Include="MidiSettings12.xaml.cs">
-      <DependentUpon>MidiSettings12.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MidiSettings4.xaml.cs">
-      <DependentUpon>MidiSettings4.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MidiSettings6.xaml.cs">
-      <DependentUpon>MidiSettings6.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MidiSettings8.xaml.cs">
-      <DependentUpon>MidiSettings8.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Oscillator.cs" />
     <Compile Include="Oscilloscope.cs" />
     <Compile Include="Patch.cs" />
@@ -247,7 +238,9 @@
     <Content Include="Images\KeyPriorityReleaseFirst.png" />
     <Content Include="Images\KeyPriorityStayDead.png" />
     <Content Include="Images\Manual2.png" />
+    <Content Include="Images\MidiSettingBackground.png" />
     <Content Include="Images\MidiSettings2.png" />
+    <Content Include="Images\MidiSettingsClickArea.png" />
     <Content Include="Images\OscNumbers\1.png" />
     <Content Include="Images\OscNumbers\10.png" />
     <Content Include="Images\OscNumbers\11.png" />
@@ -283,6 +276,8 @@
     <Content Include="Images\Polyphony8.png" />
     <Content Include="Images\SaveAsToFile.png" />
     <Content Include="Images\TitleBackground.png" />
+    <Content Include="Images\VelocityOff.png" />
+    <Content Include="Images\VelocityOn.png" />
     <Content Include="Images\Wires\AllSockets.png" />
     <Content Include="Images\Wires\AM0D1R.png" />
     <Content Include="Images\Wires\AM0D2R.png" />
@@ -488,8 +483,6 @@
     <Content Include="Images\Settings.png" />
     <Content Include="Images\UsingGraphicsCardOff.png" />
     <Content Include="Images\UsingGraphicsCardOn.png" />
-    <Content Include="Images\VelocityOff.png" />
-    <Content Include="Images\VelocityOn.png" />
     <Content Include="Images\WhiteKey.png" />
     <Content Include="Images\Wood.jpg" />
     <Content Include="Images\XmToFreq.png" />
@@ -533,19 +526,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="MidiSettings12.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="MidiSettings4.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="MidiSettings6.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="MidiSettings8.xaml">
+    <Page Include="MidiSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -592,6 +573,7 @@
     <Content Include="Patches\Wind.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Images\VelocityOff.pdn" />
     <None Include="R2D2.json" />
     <None Include="SynthLab_TemporaryKey.pfx" />
   </ItemGroup>
