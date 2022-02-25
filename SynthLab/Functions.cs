@@ -324,55 +324,55 @@ namespace SynthLab
         }
 
         //!!! Remove change polyphony!
-        private async void ChangePolyphony(int polyphony)
-        {
-            allowGuiUpdates = false;
-            Patch.Polyphony = polyphony;
-            Patch.CreateOscillators(this);
-            dispatcher = new KeyDispatcher[17];
-            for (int ch = 0; ch < 17; ch++)
-            {
-                dispatcher[ch] = new KeyDispatcher(this, Patch.Polyphony);
-            }
-            //CreateWaveShapes();
+        //private async void ChangePolyphony(int polyphony)
+        //{
+        //    allowGuiUpdates = false;
+        //    Patch.Polyphony = polyphony;
+        //    Patch.CreateOscillators(this);
+        //    dispatcher = new KeyDispatcher[17];
+        //    for (int ch = 0; ch < 17; ch++)
+        //    {
+        //        dispatcher[ch] = new KeyDispatcher(this, Patch.Polyphony);
+        //    }
+        //    //CreateWaveShapes();
 
-            FrameServer.PolyServers = new PolyServer[Patch.Polyphony];
-            for (int poly = 0; poly < Patch.Polyphony; poly++)
-            {
-                FrameServer.PolyServers[poly] = new PolyServer(this);
-            }
+        //    FrameServer.PolyServers = new PolyServer[Patch.Polyphony];
+        //    for (int poly = 0; poly < Patch.Polyphony; poly++)
+        //    {
+        //        FrameServer.PolyServers[poly] = new PolyServer(this);
+        //    }
 
-            foreach (List<Oscillator> oscList in Patch.Oscillators)
-            {
-                foreach (Oscillator osc in oscList)
-                {
-                    osc.mainPage = this;
-                    osc.PitchEnvelope.mainPage = this;
-                    osc.Adsr.mainPage = this;
-                }
-            }
+        //    foreach (List<Oscillator> oscList in Patch.Oscillators)
+        //    {
+        //        foreach (Oscillator osc in oscList)
+        //        {
+        //            osc.mainPage = this;
+        //            osc.PitchEnvelope.mainPage = this;
+        //            osc.Adsr.mainPage = this;
+        //        }
+        //    }
 
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-            {
-                CreateLayout(Patch.Layout);
-                //CreateFilters();
-                CreateControls();
-                CreateWiring();
+        //    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+        //    {
+        //        CreateLayout(Patch.Layout);
+        //        //CreateFilters();
+        //        CreateControls();
+        //        CreateWiring();
 
-                // Make sure all controls has the correct size and position:
-                Controls.ResizeControls(gridControls, Window.Current.Bounds);
-                Controls.SetControlsUniform(gridControls);
-                Controls.ResizeControls(gridControlPanel, Window.Current.Bounds);
-                Controls.SetControlsUniform(gridControlPanel);
+        //        // Make sure all controls has the correct size and position:
+        //        Controls.ResizeControls(gridControls, Window.Current.Bounds);
+        //        Controls.SetControlsUniform(gridControls);
+        //        Controls.ResizeControls(gridControlPanel, Window.Current.Bounds);
+        //        Controls.SetControlsUniform(gridControlPanel);
 
-                ((Rotator)ControlPanel.SubControls.ControlsList[(int)ControlPanelControls.LAYOUT]).Selection = (int)Patch.Layout;
+        //        ((Rotator)ControlPanel.SubControls.ControlsList[(int)ControlPanelControls.LAYOUT]).Selection = (int)Patch.Layout;
 
-                for (int osc = 0; osc < Patch.OscillatorCount; osc++)
-                {
-                    selectedOscillator = Patch.Oscillators[0][osc];
-                    allowGuiUpdates = true;
-                }
-            });
-        }
+        //        for (int osc = 0; osc < Patch.OscillatorCount; osc++)
+        //        {
+        //            selectedOscillator = Patch.Oscillators[0][osc];
+        //            allowGuiUpdates = true;
+        //        }
+        //    });
+        //}
     }
 }

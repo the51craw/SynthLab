@@ -69,7 +69,7 @@ namespace SynthLab
             //}
             //Channel = new int[polyphony];
             pedalHold = false;
-            ResetLists();
+            Clear();
             KeyOrder = new int[polyphony];
             for (int i = 0; i < polyphony; i++)
             {
@@ -267,15 +267,12 @@ namespace SynthLab
         }
 
 
-        private void ResetLists()
+        public void Clear()
         {
-            for (int ch = 0; ch < 16; ch++)
+            for (int poly = 0; poly < polyphony; poly++)
             {
-                for (int poly = 0; poly < polyphony; poly++)
-                {
-                    Key[poly] = -1;
-                    IsPressed[poly] = false;
-                }
+                Key[poly] = -1;
+                IsPressed[poly] = false;
             }
         }
 

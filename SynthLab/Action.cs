@@ -59,7 +59,7 @@ namespace SynthLab
         public int AdsrModWheel = 0;
         public int FilterModWheel = 0;
         private Boolean select;
-        int osc = 0;
+        int ch = 0;
 
         #endregion properties
         #region main
@@ -129,15 +129,15 @@ namespace SynthLab
             switch (selectedCompoundType)
             {
                 case _compoundType.OSCILLATOR:
-                    osc = oscillatorUnderMouse;
+                    ch = oscillatorUnderMouse;
                     switch (knob.Id)
                     {
                         case (int)OscillatorControls.MODULATION:
                             for (int poly = 0; poly < Patch.Polyphony; poly++)
                             {
-                                Oscillator oscillator = Patch.Oscillators[poly][osc];
+                                Oscillator oscillator = Patch.Oscillators[poly][ch];
 
-                                switch (((Rotator)(OscillatorGUIs[osc].
+                                switch (((Rotator)(OscillatorGUIs[ch].
                                     SubControls.ControlsList[(int)OscillatorControls.MODULATION_KNOB_TARGET])).Selection)
                                 {
                                     case 0:
@@ -171,7 +171,7 @@ namespace SynthLab
                             }
                             break;
                         case (int)OscillatorControls.FREQUENCY:
-                            selectedOscillator = Patch.Oscillators[0][osc];
+                            selectedOscillator = Patch.Oscillators[0][ch];
                             for (int poly = 0; poly < Patch.Polyphony; poly++)
                             {
                                 if (currentOscillator.Keyboard)
@@ -195,7 +195,7 @@ namespace SynthLab
                             }
                             break;
                         case (int)OscillatorControls.FINE_TUNE:
-                            selectedOscillator = Patch.Oscillators[0][osc];
+                            selectedOscillator = Patch.Oscillators[0][ch];
                             for (int poly = 0; poly < Patch.Polyphony; poly++)
                             {
                                 if (currentOscillator.Keyboard)
@@ -216,20 +216,20 @@ namespace SynthLab
                             }
                             break;
                         case (int)OscillatorControls.VOLUME:
-                            selectedOscillator = Patch.Oscillators[0][osc];
+                            selectedOscillator = Patch.Oscillators[0][ch];
                             if (knob.Value == 0)
                             {
                                 select = false;
                             }
                             for (int poly = 0; poly < Patch.Polyphony; poly++)
                             {
-                                Patch.Oscillators[poly][osc].Volume = (byte)knob.Value;
+                                Patch.Oscillators[poly][ch].Volume = (byte)knob.Value;
                             }
                             try
                             {
-                                ((Indicator)OscillatorGUIs[osc].
+                                ((Indicator)OscillatorGUIs[ch].
                                     SubControls.ControlsList[(int)OscillatorControls.LEDSOUNDING]).IsOn = 
-                                    Patch.Oscillators[0][osc].Volume > 0 ? true : false;
+                                    Patch.Oscillators[0][ch].Volume > 0 ? true : false;
                             }
                             catch (Exception exception)
                             {
@@ -240,8 +240,8 @@ namespace SynthLab
                     }
                     break;
                 case _compoundType.FILTER:
-                    osc = FilterToOscillator(filterUnderMouse);
-                    selectedOscillator = Patch.Oscillators[0][osc];
+                    ch = FilterToOscillator(filterUnderMouse);
+                    selectedOscillator = Patch.Oscillators[0][ch];
                     ((Knob)((CompoundControl)FilterGUIs[filterUnderMouse]).
                     SubControls.ControlsList[knob.Id]).Value = (int)obj;
                     // Don't change parameters in the middle of generating wave shape:
@@ -255,76 +255,76 @@ namespace SynthLab
                         switch (knob.Id)
                         {
                             case (int)FilterControls.Q:
-                                Patch.Oscillators[poly][osc].Filter.Q = (byte)(int)obj;
+                                Patch.Oscillators[poly][ch].Filter.Q = (byte)(int)obj;
                                 break;
                             case (int)FilterControls.FREQUENCY_CENTER:
-                                Patch.Oscillators[poly][osc].Filter.FrequencyCenter = (byte)(int)obj;
+                                Patch.Oscillators[poly][ch].Filter.FrequencyCenter = (byte)(int)obj;
                                 break;
                             case (int)FilterControls.KEYBOARD_FOLLOW:
-                                Patch.Oscillators[poly][osc].Filter.KeyboardFollow = (byte)(int)obj;
+                                Patch.Oscillators[poly][ch].Filter.KeyboardFollow = (byte)(int)obj;
                                 break;
                             case (int)FilterControls.GAIN:
-                                Patch.Oscillators[poly][osc].Filter.Gain = (byte)(int)obj;
+                                Patch.Oscillators[poly][ch].Filter.Gain = (byte)(int)obj;
                                 break;
                             case (int)FilterControls.FILTER_MIX:
-                                Patch.Oscillators[poly][osc].Filter.Mix = (byte)(int)obj;
+                                Patch.Oscillators[poly][ch].Filter.Mix = (byte)(int)obj;
                                 break;
                         }
-                        if (Patch.Oscillators[poly][osc].Filter.FilterFunction > 0)
+                        if (Patch.Oscillators[poly][ch].Filter.FilterFunction > 0)
                         {
-                            Patch.Oscillators[poly][osc].WaveShape.ApplyFilter(Patch.Oscillators[poly][osc].Key);
+                            Patch.Oscillators[poly][ch].WaveShape.ApplyFilter(Patch.Oscillators[poly][ch].Key);
                         }
                     }
                     CurrentActivity = CURRENTACTIVITY.NONE;
                     break;
                 case _compoundType.PITCH_ENVELOPE:
-                    osc = PitchEnvelopeToOscillator(pitchEnvelopeUnderMouse);
-                    selectedOscillator = Patch.Oscillators[0][osc];
+                    ch = PitchEnvelopeToOscillator(pitchEnvelopeUnderMouse);
+                    selectedOscillator = Patch.Oscillators[0][ch];
                     switch (knob.Id)
                     {
                         case (int)PitchEnvelopeControls.DEPTH:
                             for (int poly = 0; poly < Patch.Polyphony; poly++)
                             {
-                                Patch.Oscillators[poly][osc]
+                                Patch.Oscillators[poly][ch]
                                     .PitchEnvelope.Depth = (int)obj;
                             }
                             break;
                         case (int)PitchEnvelopeControls.SPEED:
                             for (int poly = 0; poly < Patch.Polyphony; poly++)
                             {
-                                Patch.Oscillators[poly][osc]
+                                Patch.Oscillators[poly][ch]
                                     .PitchEnvelope.Speed = (int)obj;
                             }
                             break;
                     }
                     break;
                 case _compoundType.ADSR:
-                    osc = AdsrToOscillator(adsrUnderMouse);
-                    selectedOscillator = Patch.Oscillators[0][osc];
+                    ch = AdsrToOscillator(adsrUnderMouse);
+                    selectedOscillator = Patch.Oscillators[0][ch];
                     switch (knob.Id)
                     {
                         case ((int)AdsrControls.ADSR_A):
                             for (int poly = 0; poly < Patch.Polyphony; poly++)
                             {
-                                Patch.Oscillators[poly][osc].Adsr.AdsrAttackTime = (byte)(int)obj;
+                                Patch.Oscillators[poly][ch].Adsr.AdsrAttackTime = (byte)(int)obj;
                             }
                             break;
                         case (int)AdsrControls.ADSR_D:
                             for (int poly = 0; poly < Patch.Polyphony; poly++)
                             {
-                                Patch.Oscillators[poly][osc].Adsr.AdsrDecayTime = (byte)(int)obj;
+                                Patch.Oscillators[poly][ch].Adsr.AdsrDecayTime = (byte)(int)obj;
                             }
                             break;
                         case (int)AdsrControls.ADSR_S:
                             for (int poly = 0; poly < Patch.Polyphony; poly++)
                             {
-                                Patch.Oscillators[poly][osc].Adsr.AdsrSustainLevel = (byte)(int)obj;
+                                Patch.Oscillators[poly][ch].Adsr.AdsrSustainLevel = (byte)(int)obj;
                             }
                             break;
                         case (int)AdsrControls.ADSR_R:
                             for (int poly = 0; poly < Patch.Polyphony; poly++)
                             {
-                                Patch.Oscillators[poly][osc].Adsr.AdsrReleaseTime = (byte)(int)obj;
+                                Patch.Oscillators[poly][ch].Adsr.AdsrReleaseTime = (byte)(int)obj;
                             }
                             break;
                     }
@@ -361,12 +361,12 @@ namespace SynthLab
             switch (selectedCompoundType)
             {
                 case _compoundType.OSCILLATOR:
-                    osc = oscillatorUnderMouse;
-                    if (osc < 0)
+                    ch = oscillatorUnderMouse;
+                    if (ch < 0)
                     {
                         break;
                     }
-                    selectedOscillator = Patch.Oscillators[0][osc];
+                    selectedOscillator = Patch.Oscillators[0][ch];
                     select = true;
                     switch (ctrl.Id)
                     {
@@ -450,25 +450,25 @@ namespace SynthLab
                     }
                     break;
                 case _compoundType.FILTER:
-                    osc = FilterToOscillator(filterUnderMouse);
-                    selectedOscillator = Patch.Oscillators[0][osc];
+                    ch = FilterToOscillator(filterUnderMouse);
+                    selectedOscillator = Patch.Oscillators[0][ch];
                     for (int poly = 0; poly < Patch.Polyphony; poly++)
                     {
                         switch (ctrl.Id)
                         {
                             case (int)FilterControls.FILTER_FUNCTION:
-                                Patch.Oscillators[poly][osc].Filter.FilterFunction = (int)obj;
-                                CreateWaveform(Patch.Oscillators[poly][osc]);
+                                Patch.Oscillators[poly][ch].Filter.FilterFunction = (int)obj;
+                                CreateWaveform(Patch.Oscillators[poly][ch]);
                                 break;
                             case (int)FilterControls.MODULATION_WHEEL_TARGET:
-                                Patch.Oscillators[poly][osc].Filter.ModulationWheelTarget = (int)obj;
+                                Patch.Oscillators[poly][ch].Filter.ModulationWheelTarget = (int)obj;
                                 break;
                         }
                     }
                     break;
                 case _compoundType.PITCH_ENVELOPE:
-                    osc = PitchEnvelopeToOscillator(pitchEnvelopeUnderMouse);
-                    selectedOscillator = Patch.Oscillators[0][osc];
+                    ch = PitchEnvelopeToOscillator(pitchEnvelopeUnderMouse);
+                    selectedOscillator = Patch.Oscillators[0][ch];
 
                     for (int poly = 0; poly < Patch.OscillatorCount; poly++)
                     {
@@ -493,14 +493,14 @@ namespace SynthLab
                     }
                     break;
                 case _compoundType.ADSR:
-                    osc = AdsrToOscillator(adsrUnderMouse);
-                    selectedOscillator = Patch.Oscillators[0][osc];
+                    ch = AdsrToOscillator(adsrUnderMouse);
+                    selectedOscillator = Patch.Oscillators[0][ch];
                     switch (ctrl.Id)
                     {
                         case (int)AdsrControls.ADSR_MODULATION_WHEEL_USE:
                             for (int poly = 0; poly < Patch.Polyphony; poly++)
                             {
-                                Patch.Oscillators[poly][osc].Adsr.AdsrModulationWheelTarget = (int)obj;
+                                Patch.Oscillators[poly][ch].Adsr.AdsrModulationWheelTarget = (int)obj;
                             }
                             break;
                         case (int)AdsrControls.PEDAL_HOLD:
@@ -562,7 +562,13 @@ namespace SynthLab
                         //    }
                         //    break;
                         case (int)ControlPanelControls.MIDI_SETTINGS:
+                            AllKeysOff();
                             await midiSettings.ShowAsync();
+                            for (int osc = 0; osc < 17; osc++)
+                            {
+                                dispatcher[osc].Clear();
+                            }
+
                             //switch (Patch.Layout)
                             //{
                             //    case Layouts.FOUR_OSCILLATORS:
@@ -588,16 +594,16 @@ namespace SynthLab
                             //}
                             break;
                         case (int)ControlPanelControls.SETTINGS:
-                            settings.Polyphony = Patch.Polyphony;
+                            //settings.Polyphony = Patch.Polyphony;
                             await settings.ShowAsync();
                             for (int ch = 0; ch < 16; ch++)
                             {
                                 dispatcher[ch].KeyPriority = settings.KeyPriority;
                             }
-                            if (settings.Polyphony != Patch.Polyphony)
-                            {
-                                ChangePolyphony(settings.Polyphony);
-                            }
+                            //if (settings.Polyphony != Patch.Polyphony)
+                            //{
+                            //    ChangePolyphony(settings.Polyphony);
+                            //}
                             break;
                         case (int)ControlPanelControls.MANUAL:
                             await ShowManual();
@@ -623,8 +629,8 @@ namespace SynthLab
             switch (selectedCompoundType)
             {
                 case _compoundType.OSCILLATOR:
-                    osc = oscillatorUnderMouse;
-                    selectedOscillator = Patch.Oscillators[0][osc];
+                    ch = oscillatorUnderMouse;
+                    selectedOscillator = Patch.Oscillators[0][ch];
                     switch (ctrl.Id)
                     {
                         case (int)OscillatorControls.OUT_SOCKET:
@@ -821,7 +827,7 @@ namespace SynthLab
 
         public void GraphAction(Graph ctrl, Object obj)
         {
-            osc = PitchEnvelopeToOscillator(pitchEnvelopeUnderMouse);
+            ch = PitchEnvelopeToOscillator(pitchEnvelopeUnderMouse);
             int id = ((PointerData)obj).Id;
             int mouseButton = ((PointerData)obj).ButtonPressed;
             Point position = ((PointerData)obj).Position;
@@ -858,7 +864,7 @@ namespace SynthLab
                     graph.SortByX();
                     for (int poly = 0; poly < Patch.Polyphony; poly++)
                     {
-                        Patch.Oscillators[poly][osc].PitchEnvelope.CopyPoints(graph.Points);
+                        Patch.Oscillators[poly][ch].PitchEnvelope.CopyPoints(graph.Points);
                     }
                     graph.Draw();
                     break;

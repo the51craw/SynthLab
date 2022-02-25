@@ -64,9 +64,9 @@ namespace SynthLab
                         {
                             for (int osc = 0; osc < Patch.OscillatorCount/* && !isDone*/; osc++)
                             {
-                                if (Patch.Oscillators[poly][osc].IsOutput() &&
-                                    (Patch.Oscillators[poly][osc].MidiChannel == channel
-                                    || Patch.Oscillators[poly][osc].MidiChannel == 16))
+                                if (Patch.Oscillators[poly][osc].IsOutput() 
+                                    && (Patch.Oscillators[poly][osc].MidiChannel == channel
+                                        || Patch.Oscillators[poly][osc].MidiChannel == 16))
                                 {
                                     oscillatorWithAcceptedChannelFound = true;
                                     Patch.Oscillators[poly][osc].PolyId = poly;
@@ -135,8 +135,8 @@ namespace SynthLab
                         {
                             if (Patch.Oscillators[poly][osc].IsOutput() 
                                 && (Patch.Oscillators[poly][osc].MidiChannel == channel
-                                    || Patch.Oscillators[poly][osc].MidiChannel == 16)
-                                && Patch.Oscillators[poly][osc].Key == key)
+                                    || Patch.Oscillators[poly][osc].MidiChannel == 16))
+                                //&& Patch.Oscillators[poly][osc].Key == key)
                             {
                                 if (!dispatcher[channel].PedalHold)
                                 {
@@ -150,6 +150,25 @@ namespace SynthLab
                             }
                         }
                     }
+                }
+            }
+        }
+
+        public void AllKeysOff()
+        {
+            for (int poly = 0; poly < 32; poly++)
+            {
+                for (ch = 0; ch < 12; ch++)
+                {
+                    Patch.Oscillators[poly][ch].Adsr.AdsrStop();
+                }
+                FrameServer.PolyServers[poly].IsOn = false;
+            }
+            for (byte key = 0; key <= 127; key++)
+            {
+                for (ch = 0; ch < 17; ch++)
+                {
+                    dispatcher[ch].ReleaseOscillator(key);
                 }
             }
         }

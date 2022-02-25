@@ -58,7 +58,7 @@ namespace SynthLab
         public Rect AdsrBounds;
         private byte key;
         private float adsrTimeStep;
-        private int channel;
+        public int channel;
 
         [JsonConstructor]
         public ADSR(MainPage MainPage)
@@ -189,6 +189,7 @@ namespace SynthLab
                     AdsrState = AdsrStates.NONE;
                     //Pulse.PulseState = Pulse.PulseStates.RELEASE;
                     mainPage.ReleaseOscillator(key, channel);
+                    mainPage.dispatcher[channel].ReleaseOscillator(key);
                     //if (mainPage.dispatcher.NumberOfOscillatorsInUse() == 0)
                     //{
                     //    mainPage.allowGuiUpdates = true;

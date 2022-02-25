@@ -358,6 +358,7 @@ namespace SynthLab
                 for (int oscillator = 0; oscillator < patch.OscillatorsInLayout; oscillator++)
                 {
                     patch.Oscillators[poly][oscillator].MidiChannel = settings.channel[oscillator];
+                    patch.Oscillators[poly][oscillator].Adsr.channel = settings.channel[oscillator];
                     patch.Oscillators[poly][oscillator].VelocitySensitive = settings.velositySensitivity[oscillator];
                 }
             }

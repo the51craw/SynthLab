@@ -182,7 +182,6 @@ namespace SynthLab
         /// <summary>
         /// Returns true if volume is > 0 and MIDI channel is correct or -1, which means that oscillator listens to all channels.
         /// </summary>
-        /// <param name="channel"></param>
         /// <returns></returns>
         public Boolean IsOutput()
         {
