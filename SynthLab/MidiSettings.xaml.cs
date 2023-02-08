@@ -1,66 +1,132 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using UwpControlsLibrary;
-using Windows.UI.Input;
-using System.Diagnostics;
 
 namespace SynthLab
 {
     public sealed partial class MidiSettings : ContentDialog
     {
+        public int[] Channel;
+        public bool[] VelocitySensitivity;
+        public bool[] VelocityModulationSensitivity;
+
         MainPage mainPage;
         Image[][] channelImage;
         Image[][] velocityImage;
+        Image[][] velocityUsageImage;
 
-        Patch patch;
-        private Settings settings;
+        /// <summary>
+        /// 1 = velocity, 2 = modulation, 3 = velocity + modulation
+        /// </summary>
+        int[] velocityUsage;
+        bool initialize = true;
 
-        private class Settings
-        {
-            public int[] channel;
-            public Boolean[] velositySensitivity;
-
-            public Settings()
-            {
-                channel = new int[12];
-                velositySensitivity = new Boolean[12];
-            }
-        }
-
-        private class MidiChannelTag
-        {
-            public int Oscillator;
-            public int Channel;
-
-            public MidiChannelTag(int Oscillator, int Channel)
-            {
-                this.Oscillator = Oscillator;
-                this.Channel = Channel;
-            }
-        }
-
-        public MidiSettings(MainPage mainPage, Patch patch)
+        public MidiSettings(MainPage mainPage)
         {
             this.InitializeComponent();
             this.mainPage = mainPage;
-            Setup(patch);
+            Channel = new int[12];
+            velocityUsage = new int[12];
+            VelocitySensitivity = new bool[12];
+            VelocityModulationSensitivity = new bool[12];
+            Setup();
         }
 
-        public void Setup(Patch patch)
+        public MidiSettings(MainPage mainPage, MidiSettingsData data)
         {
-            this.patch = patch;
+            this.InitializeComponent();
+            this.mainPage = mainPage;
+            Channel = new int[12];
+            velocityUsage = new int[12];
+            VelocitySensitivity = new bool[12];
+            VelocityModulationSensitivity = new bool[12];
+
+            for (int osc = 0; osc < 12; osc++)
+            {
+                Channel[osc] = data.Channel[osc];
+                VelocitySensitivity[osc] = data.VelocitySensitivity[osc];
+                VelocityModulationSensitivity[osc] = data.VelocityModulationSensitivity[osc];
+            }
+            Setup();
+            initialize = false;
+        }
+
+        private void ContentDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
+        {
+            if (initialize)
+            {
+                for (int osc = 0; osc < 12; osc++)
+                {
+                    for (int poly = 0; poly < 6; poly++)
+                    {
+                        Channel[osc] = 0;
+                        VelocitySensitivity[osc] = false;
+                    }
+
+                    for (int ch = 0; ch < 17; ch++)
+                    {
+                        channelImage[osc][ch].Visibility =
+                            ch == Channel[osc] ? Visibility.Visible : Visibility.Collapsed;
+                    }
+
+                    velocityUsageImage[osc][0].Visibility = Visibility.Visible;
+                    velocityUsageImage[osc][1].Visibility = Visibility.Collapsed;
+                    velocityUsageImage[osc][2].Visibility = Visibility.Collapsed;
+                }
+                initialize = false;
+            }
+
+            //for (int osc = 0; osc < 12; osc++)
+            //{
+            //    for (int poly = 0; poly < 6; poly++)
+            //    {
+            //        Channel[osc] = mainPage.Oscillators[poly][osc].MidiChannel;
+            //        VelocitySensitivity[osc] = mainPage.Oscillators[poly][osc].VelocitySensitive;
+            //    }
+
+            //    for (int ch = 0; ch < 17; ch++)
+            //    {
+            //        channelImage[osc][ch].Visibility =
+            //            ch == Channel[osc] ? Visibility.Visible : Visibility.Collapsed;
+            //    }
+
+            //    velocityImage[osc][0].Visibility =
+            //        mainPage.Oscillators[0][osc].VelocitySensitive > 0 ? Visibility.Collapsed : Visibility.Visible;
+            //    velocityImage[osc][1].Visibility =
+            //        mainPage.Oscillators[0][osc].VelocitySensitive > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+            //    if (mainPage.Oscillators[0][osc].VelocitySensitive > 0)
+            //    {
+            //        velocityUsageImage[osc][0].Visibility = Visibility.Collapsed;
+            //        velocityUsageImage[osc][1].Visibility = Visibility.Collapsed;
+            //        velocityUsageImage[osc][2].Visibility = Visibility.Collapsed;
+
+            //        switch (mainPage.Oscillators[0][osc].VelocitySensitive)
+            //        {
+            //            case 1:
+            //                velocityUsageImage[osc][0].Visibility = Visibility.Visible;
+            //                break;
+            //            case 2:
+            //                velocityUsageImage[osc][1].Visibility = Visibility.Visible;
+            //                break;
+            //            case 3:
+            //                velocityUsageImage[osc][2].Visibility = Visibility.Visible;
+            //                break;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        velocityUsageImage[osc][0].Visibility = Visibility.Visible;
+            //        velocityUsageImage[osc][1].Visibility = Visibility.Collapsed;
+            //        velocityUsageImage[osc][2].Visibility = Visibility.Collapsed;
+            //    }
+            //}
+        }
+
+        public void Setup()
+        {
             channelImage = new Image[12][];
 
             for (int osc = 0; osc < 12; osc++)
@@ -289,6 +355,8 @@ namespace SynthLab
                 for (int ch = 0; ch < 17; ch++)
                 {
                     channelImage[osc][ch].Tag = new MidiChannelTag(osc, ch);
+                    channelImage[osc][ch].Visibility =
+                        ch == Channel[osc] ? Visibility.Visible : Visibility.Collapsed;
                 }
             }
 
@@ -324,42 +392,111 @@ namespace SynthLab
             velocityImage[10][1] = vsOn11;
             velocityImage[11][1] = vsOn12;
 
-            settings = new Settings();
-        }
-
-
-        private void ContentDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
-        {
             for (int osc = 0; osc < 12; osc++)
             {
-                for (int poly = 0; poly < 32; poly++)
-                {
-                    settings.channel[osc] = patch.Oscillators[poly][osc].MidiChannel;
-                    settings.velositySensitivity[osc] = patch.Oscillators[poly][osc].VelocitySensitive;
-                }
+                velocityImage[osc][0].Visibility = VelocitySensitivity[osc] || VelocityModulationSensitivity[osc] ? Visibility.Collapsed : Visibility.Visible;
+                velocityImage[osc][1].Visibility = VelocitySensitivity[osc] || VelocityModulationSensitivity[osc] ? Visibility.Visible : Visibility.Collapsed;
+            }
 
-                for (int ch = 0; ch < 17; ch++)
-                {
-                    channelImage[osc][ch].Visibility =
-                        ch == settings.channel[osc] ? Visibility.Visible : Visibility.Collapsed;
-                }
+            velocityUsageImage = new Image[12][];
+            for (int osc = 0; osc < 12; osc++)
+            {
+                velocityUsageImage[osc] = new Image[3];
+            }
 
-                velocityImage[osc][0].Visibility =
-                    settings.velositySensitivity[osc] ? Visibility.Collapsed : Visibility.Visible;
-                velocityImage[osc][1].Visibility =
-                    settings.velositySensitivity[osc] ? Visibility.Visible : Visibility.Collapsed;
+            velocityUsageImage[0][0] = vsToVol1;
+            velocityUsageImage[1][0] = vsToVol2;
+            velocityUsageImage[2][0] = vsToVol3;
+            velocityUsageImage[3][0] = vsToVol4;
+            velocityUsageImage[4][0] = vsToVol5;
+            velocityUsageImage[5][0] = vsToVol6;
+            velocityUsageImage[6][0] = vsToVol7;
+            velocityUsageImage[7][0] = vsToVol8;
+            velocityUsageImage[8][0] = vsToVol9;
+            velocityUsageImage[9][0] = vsToVol10;
+            velocityUsageImage[10][0] = vsToVol11;
+            velocityUsageImage[11][0] = vsToVol12;
+
+            velocityUsageImage[0][1] = vsToMod1;
+            velocityUsageImage[1][1] = vsToMod2;
+            velocityUsageImage[2][1] = vsToMod3;
+            velocityUsageImage[3][1] = vsToMod4;
+            velocityUsageImage[4][1] = vsToMod5;
+            velocityUsageImage[5][1] = vsToMod6;
+            velocityUsageImage[6][1] = vsToMod7;
+            velocityUsageImage[7][1] = vsToMod8;
+            velocityUsageImage[8][1] = vsToMod9;
+            velocityUsageImage[9][1] = vsToMod10;
+            velocityUsageImage[10][1] = vsToMod11;
+            velocityUsageImage[11][1] = vsToMod12;
+
+            velocityUsageImage[0][2] = vsToVM1;
+            velocityUsageImage[1][2] = vsToVM2;
+            velocityUsageImage[2][2] = vsToVM3;
+            velocityUsageImage[3][2] = vsToVM4;
+            velocityUsageImage[4][2] = vsToVM5;
+            velocityUsageImage[5][2] = vsToVM6;
+            velocityUsageImage[6][2] = vsToVM7;
+            velocityUsageImage[7][2] = vsToVM8;
+            velocityUsageImage[8][2] = vsToVM9;
+            velocityUsageImage[9][2] = vsToVM10;
+            velocityUsageImage[10][2] = vsToVM11;
+            velocityUsageImage[11][2] = vsToVM12;
+
+            for (int osc = 0; osc < 12; osc++)
+            {
+                if (!VelocitySensitivity[osc] && !VelocityModulationSensitivity[osc])
+                {
+                    velocityUsageImage[osc][0].Visibility = Visibility.Visible;
+                    velocityUsageImage[osc][1].Visibility = Visibility.Collapsed;
+                    velocityUsageImage[osc][2].Visibility = Visibility.Collapsed;
+                }
+                else if (VelocitySensitivity[osc] && !VelocityModulationSensitivity[osc])
+                {
+                    velocityUsageImage[osc][0].Visibility = Visibility.Visible;
+                    velocityUsageImage[osc][1].Visibility = Visibility.Collapsed;
+                    velocityUsageImage[osc][2].Visibility = Visibility.Collapsed;
+                }
+                else if (!VelocitySensitivity[osc] && VelocityModulationSensitivity[osc])
+                {
+                    velocityUsageImage[osc][0].Visibility = Visibility.Collapsed;
+                    velocityUsageImage[osc][1].Visibility = Visibility.Visible;
+                    velocityUsageImage[osc][2].Visibility = Visibility.Collapsed;
+                }
+                else if (VelocitySensitivity[osc] && VelocityModulationSensitivity[osc])
+                {
+                    velocityUsageImage[osc][0].Visibility = Visibility.Collapsed;
+                    velocityUsageImage[osc][1].Visibility = Visibility.Collapsed;
+                    velocityUsageImage[osc][2].Visibility = Visibility.Visible;
+                }
             }
         }
 
+
         private void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            for (int poly = 0; poly < patch.Polyphony; poly++)
+            for (int poly = 0; poly < 6; poly++)
             {
-                for (int oscillator = 0; oscillator < patch.OscillatorsInLayout; oscillator++)
+                for (int osc = 0; osc < 12; osc++)
                 {
-                    patch.Oscillators[poly][oscillator].MidiChannel = settings.channel[oscillator];
-                    patch.Oscillators[poly][oscillator].Adsr.channel = settings.channel[oscillator];
-                    patch.Oscillators[poly][oscillator].VelocitySensitive = settings.velositySensitivity[oscillator];
+                    mainPage.Oscillators[poly][osc].MidiChannel = Channel[osc];
+                    mainPage.Oscillators[poly][osc].Adsr.channel = Channel[osc];
+                    if (!VelocitySensitivity[osc] && !VelocityModulationSensitivity[osc])
+                    {
+                        mainPage.Oscillators[poly][osc].VelocitySensitive = 0;
+                    }
+                    else if (VelocitySensitivity[osc] && !VelocityModulationSensitivity[osc])
+                    {
+                        mainPage.Oscillators[poly][osc].VelocitySensitive = 1;
+                    }
+                    else if (!VelocitySensitivity[osc] && VelocityModulationSensitivity[osc])
+                    {
+                        mainPage.Oscillators[poly][osc].VelocitySensitive = 2;
+                    }
+                    else if (VelocitySensitivity[osc] && VelocityModulationSensitivity[osc])
+                    {
+                        mainPage.Oscillators[poly][osc].VelocitySensitive = 3;
+                    }
                 }
             }
         }
@@ -376,7 +513,7 @@ namespace SynthLab
             ch++;
             ch = ch < 17 ? ch : 0;
             channelImage[osc][ch].Visibility = Visibility.Visible;
-            settings.channel[osc] = ch;
+            Channel[osc] = ch;
         }
 
         private void Channel1_1_RightTapped(object sender, RightTappedRoutedEventArgs e)
@@ -387,7 +524,7 @@ namespace SynthLab
             ch--;
             ch = ch > -1 ? ch : 16;
             channelImage[osc][ch].Visibility = Visibility.Visible;
-            settings.channel[osc] = ch;
+            Channel[osc] = ch;
         }
 
         private void Channel1_1_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -404,7 +541,7 @@ namespace SynthLab
             ch = ch > -1 ? ch : 0;
             ch = ch < 17 ? ch : 16;
             channelImage[osc][ch].Visibility = Visibility.Visible;
-            settings.channel[osc] = ch;
+            Channel[osc] = ch;
         }
 
         private void VelocityOnTapped(object sender, TappedRoutedEventArgs e)
@@ -412,7 +549,8 @@ namespace SynthLab
             int osc = int.Parse((String)((Image)sender).Tag);
             velocityImage[osc][1].Visibility = Visibility.Collapsed;
             velocityImage[osc][0].Visibility = Visibility.Visible;
-            settings.velositySensitivity[osc] = false;
+            VelocitySensitivity[osc] = false;
+            VelocityModulationSensitivity[osc] = false;
         }
 
         private void VelocityOffTapped(object sender, TappedRoutedEventArgs e)
@@ -420,7 +558,97 @@ namespace SynthLab
             int osc = int.Parse((String)((Image)sender).Tag);
             velocityImage[osc][0].Visibility = Visibility.Collapsed;
             velocityImage[osc][1].Visibility = Visibility.Visible;
-            settings.velositySensitivity[osc] = true;
+            if (VelocitySensitivity[osc] == false && VelocityModulationSensitivity[osc] == false)
+            {
+                VelocitySensitivity[osc] = true;
+            }
+        }
+
+        private void VelocityToVolTapped(object sender, TappedRoutedEventArgs e)
+        {
+            int osc = int.Parse((String)((Image)sender).Tag) - 100;
+            int state = int.Parse((String)((Image)sender).Tag) / 100 - 1;
+            velocityUsageImage[osc][state].Visibility = Visibility.Collapsed;
+            state = ++state % 3;
+            velocityUsageImage[osc][state].Visibility = Visibility.Visible;
+            velocityUsage[osc] = 2;
+            VelocitySensitivity[osc] = false;
+            VelocityModulationSensitivity[osc] = true;
+        }
+
+        private void VelocityToModTapped(object sender, TappedRoutedEventArgs e)
+        {
+            int osc = int.Parse((String)((Image)sender).Tag) - 200;
+            int state = int.Parse((String)((Image)sender).Tag) / 200;
+            velocityUsageImage[osc][state].Visibility = Visibility.Collapsed;
+            state = ++state % 3;
+            velocityUsageImage[osc][state].Visibility = Visibility.Visible;
+            velocityUsage[osc] = 3;
+            VelocitySensitivity[osc] = true;
+            VelocityModulationSensitivity[osc] = true;
+        }
+
+        private void VelocityToVMTapped(object sender, TappedRoutedEventArgs e)
+        {
+            int osc = int.Parse((String)((Image)sender).Tag) - 300;
+            int state = int.Parse((String)((Image)sender).Tag) / 300 + 1;
+            velocityUsageImage[osc][state].Visibility = Visibility.Collapsed;
+            state = ++state % 3;
+            velocityUsageImage[osc][state].Visibility = Visibility.Visible;
+            velocityUsage[osc] = 1;
+            VelocitySensitivity[osc] = true;
+            VelocityModulationSensitivity[osc] = false;
+        }
+
+        private void VelocityToVolRightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            int osc = int.Parse((String)((Image)sender).Tag) - 100;
+            int state = int.Parse((String)((Image)sender).Tag) / 100 - 1;
+            velocityUsageImage[osc][state].Visibility = Visibility.Collapsed;
+            state--;
+            state = state < 0 ? 2 : state;
+            velocityUsageImage[osc][state].Visibility = Visibility.Visible;
+            velocityUsage[osc] = 2;
+            VelocitySensitivity[osc] = false;
+            VelocityModulationSensitivity[osc] = true;
+        }
+
+        private void VelocityToModRightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            int osc = int.Parse((String)((Image)sender).Tag) - 200;
+            int state = int.Parse((String)((Image)sender).Tag) / 200;
+            velocityUsageImage[osc][state].Visibility = Visibility.Collapsed;
+            state--;
+            state = state < 0 ? 2 : state;
+            velocityUsageImage[osc][state].Visibility = Visibility.Visible;
+            velocityUsage[osc] = 3;
+            VelocitySensitivity[osc] = true;
+            VelocityModulationSensitivity[osc] = true;
+        }
+
+        private void VelocityToVMRightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            int osc = int.Parse((String)((Image)sender).Tag) - 300;
+            int state = int.Parse((String)((Image)sender).Tag) / 300 + 1;
+            velocityUsageImage[osc][state].Visibility = Visibility.Collapsed;
+            state--;
+            state = state < 0 ? 2 : state;
+            velocityUsageImage[osc][state].Visibility = Visibility.Visible;
+            velocityUsage[osc] = 1;
+            VelocitySensitivity[osc] = true;
+            VelocityModulationSensitivity[osc] = false;
+        }
+    }
+
+    public class MidiChannelTag
+    {
+        public int Oscillator;
+        public int Channel;
+
+        public MidiChannelTag(int Oscillator, int Channel)
+        {
+            this.Oscillator = Oscillator;
+            this.Channel = Channel;
         }
     }
 }

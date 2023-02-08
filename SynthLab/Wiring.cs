@@ -1,12 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UwpControlsLibrary;
-using Windows.Foundation;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace SynthLab
@@ -27,57 +22,39 @@ namespace SynthLab
 
         public int HangingWire;
 
-        public void MakeConnections()
+        public void MakeConnections(bool force = false)
         {
-            foreach (Oscillator osc in Patch.Oscillators[0])
+            foreach (Oscillator osc in Oscillators[0])
             {
                 if (osc.AM_ModulatorId > -1)
                 {
                     Source = new Socket(SocketType.OUT, osc.AM_ModulatorId);
                     Destination = new Socket(SocketType.AM, osc.Id);
-                    if (MakeConnection())
-                    {
-                        for (int poly = 0; poly < Patch.Polyphony; poly++)
-                        {
-                            CreateWaveform(Patch.Oscillators[poly][osc.Id]);
-                        }
-                    }
+                    MakeConnection(force);
                 }
                 if (osc.FM_ModulatorId > -1)
                 {
                     Source = new Socket(SocketType.OUT, osc.FM_ModulatorId);
                     Destination = new Socket(SocketType.FM, osc.Id);
-                    if (MakeConnection())
-                    {
-                        for (int poly = 0; poly < Patch.Polyphony; poly++)
-                        {
-                            CreateWaveform(Patch.Oscillators[poly][osc.Id]);
-                        }
-                    }
+                    MakeConnection(force);
                 }
                 if (osc.XM_ModulatorId > -1)
                 {
                     Source = new Socket(SocketType.OUT, osc.XM_ModulatorId);
                     Destination = new Socket(SocketType.XM, osc.Id);
-                    if (MakeConnection())
-                    {
-                        for (int poly = 0; poly < Patch.Polyphony; poly++)
-                        {
-                            CreateWaveform(Patch.Oscillators[poly][osc.Id]);
-                        }
-                    }
+                    MakeConnection(force);
                 }
             }
         }
 
         public int FindWire(Socket source, Socket destination)
         {
-            for (int i = 0; i < Patch.Wiring.wires.Count; i++)
+            for (int i = 0; i < Wiring.wires.Count; i++)
             {
-                if (Patch.Wiring.wires[i] != null && 
-                    Patch.Wiring.wires[i].Source.OscillatorId == source.OscillatorId &&
-                    Patch.Wiring.wires[i].Destination.OscillatorId == destination.OscillatorId &&
-                    Patch.Wiring.wires[i].Destination.SocketType == destination.SocketType)
+                if (Wiring.wires[i] != null && 
+                    Wiring.wires[i].Source.OscillatorId == source.OscillatorId &&
+                    Wiring.wires[i].Destination.OscillatorId == destination.OscillatorId &&
+                    Wiring.wires[i].Destination.SocketType == destination.SocketType)
                 {
                     return i;
                 }
@@ -87,12 +64,12 @@ namespace SynthLab
 
         public int FindWire(int source, int destination, SocketType socketType)
         {
-            for (int i = 0; i < Patch.Wiring.wires.Count; i++)
+            for (int i = 0; i < Wiring.wires.Count; i++)
             {
-                if (Patch.Wiring.wires[i] != null &&
-                    Patch.Wiring.wires[i].Source.OscillatorId == source &&
-                    Patch.Wiring.wires[i].Destination.OscillatorId == destination &&
-                    Patch.Wiring.wires[i].Destination.SocketType == socketType)
+                if (Wiring.wires[i] != null &&
+                    Wiring.wires[i].Source.OscillatorId == source &&
+                    Wiring.wires[i].Destination.OscillatorId == destination &&
+                    Wiring.wires[i].Destination.SocketType == socketType)
                 {
                     return i;
                 }
@@ -100,43 +77,53 @@ namespace SynthLab
             return -1;
         }
 
-        private bool MakeConnection()
+        private bool MakeConnection(bool force = false)
         {
             int wireNumber = FindWire(Source, Destination);
             Oscillator sourceOscillator = GetOscillatorById(Source.OscillatorId);
             Oscillator destinationOscillator = GetOscillatorById(Destination.OscillatorId);
 
-            if (wireNumber > -1)
+            if (wireNumber > -1 || force)
             {
                 ((Indicator)Controls.ControlsList[HangingWire]).IsOn = false;
-                Patch.Wiring.wires[wireNumber].Indicator.IsOn = true;
+                if (wireNumber > -1)
+                {
+                    Wiring.wires[wireNumber].Indicator.IsOn = true;
+                }
 
-                for (int poly = 0; poly < Patch.Polyphony; poly++)
+                for (int poly = 0; poly < 6; poly++)
                 {
                     switch (Destination.SocketType)
                     {
                         case SocketType.AM:
-                            Patch.Oscillators[poly][destinationOscillator.Id].AM_Modulator =
-                                Patch.Oscillators[poly][sourceOscillator.Id];
-                            Patch.Oscillators[poly][destinationOscillator.Id].AM_ModulatorId =
+                            Oscillators[poly][destinationOscillator.Id].AM_Modulator =
+                                Oscillators[poly][sourceOscillator.Id];
+                            Oscillators[poly][destinationOscillator.Id].AM_ModulatorId =
                                 sourceOscillator.Id;
                             break;
                         case SocketType.FM:
-                            Patch.Oscillators[poly][destinationOscillator.Id].FM_Modulator =
-                                Patch.Oscillators[poly][sourceOscillator.Id];
-                            Patch.Oscillators[poly][destinationOscillator.Id].FM_ModulatorId =
+                            Oscillators[poly][destinationOscillator.Id].FM_Modulator =
+                                Oscillators[poly][sourceOscillator.Id];
+                            Oscillators[poly][destinationOscillator.Id].FM_ModulatorId =
                                 sourceOscillator.Id;
                             break;
                         case SocketType.XM:
-                            Patch.Oscillators[poly][destinationOscillator.Id].XM_Modulator =
-                                Patch.Oscillators[poly][sourceOscillator.Id];
-                            Patch.Oscillators[poly][destinationOscillator.Id].XM_ModulatorId =
+                            Oscillators[poly][destinationOscillator.Id].XM_Modulator =
+                                Oscillators[poly][sourceOscillator.Id];
+                            Oscillators[poly][destinationOscillator.Id].XM_ModulatorId =
                                 sourceOscillator.Id;
+                            Oscillators[poly][sourceOscillator.Id].Modulating.Add(
+                            Oscillators[poly][destinationOscillator.Id]);
                             break;
                     }
                 }
-                Patch.Wiring.SourceConnected = false;
-                Patch.Wiring.DestinationConnected = false;
+                Wiring.SourceConnected = false;
+                Wiring.DestinationConnected = false;
+            }
+
+            if (force)
+            {
+                return true;
             }
 
             return wireNumber > -1;
@@ -144,21 +131,21 @@ namespace SynthLab
 
         public void Disconnect(int wireId, SocketType socketType)
         {
-            for (int poly = 0; poly < Patch.Polyphony; poly++)
+            for (int poly = 0; poly < 6; poly++)
             {
                 switch (socketType)
                 {
                     case SocketType.AM:
                         Disconnect(wireId, SocketType.AM, poly);
-                        Patch.Wiring.wires[wireId].Indicator.IsOn = false;
+                        Wiring.wires[wireId].Indicator.IsOn = false;
                         break;
                     case SocketType.FM:
                         Disconnect(wireId, SocketType.FM, poly);
-                        Patch.Wiring.wires[wireId].Indicator.IsOn = false;
+                        Wiring.wires[wireId].Indicator.IsOn = false;
                         break;
                     case SocketType.XM:
                         Disconnect(wireId, SocketType.XM, poly);
-                        Patch.Wiring.wires[wireId].Indicator.IsOn = false;
+                        Wiring.wires[wireId].Indicator.IsOn = false;
                         break;
                 }
             }
@@ -166,47 +153,47 @@ namespace SynthLab
 
         private void Disconnect(int id, SocketType socketType, int poly)
         {
-            Oscillator source = GetOscillatorById(Patch.Wiring.wires[id].Source.OscillatorId);
-            Oscillator destination = GetOscillatorById(Patch.Wiring.wires[id].Destination.OscillatorId);
+            Oscillator destination = GetOscillatorById(Wiring.wires[id].Destination.OscillatorId);
             switch (socketType)
             {
                 case SocketType.AM:
-                    Patch.Oscillators[poly][destination.Id].AM_Modulator = null;
-                    Patch.Oscillators[poly][destination.Id].AM_ModulatorId = -1;
+                    Oscillators[poly][destination.Id].AM_Modulator = null;
+                    Oscillators[poly][destination.Id].AM_ModulatorId = -1;
                     break;
                 case SocketType.FM:
-                    Patch.Oscillators[poly][destination.Id].FM_Modulator = null;
-                    Patch.Oscillators[poly][destination.Id].FM_ModulatorId = -1;
+                    Oscillators[poly][destination.Id].FM_Modulator = null;
+                    Oscillators[poly][destination.Id].FM_ModulatorId = -1;
                     break;
                 case SocketType.XM:
-                    Patch.Oscillators[poly][destination.Id].XM_Modulator = null;
-                    Patch.Oscillators[poly][destination.Id].XM_ModulatorId = -1;
+                    destination.Modulating.Remove(destination.XM_Modulator);
+                    Oscillators[poly][destination.Id].XM_Modulator = null;
+                    Oscillators[poly][destination.Id].XM_ModulatorId = -1;
                     break;
             }
         }
 
         private int FindConnectedWire(SocketType socketType, int oscillatorId)
         {
-            for (int wireNumber = 0; wireNumber < Patch.Wiring.wires.Count; wireNumber++)
+            for (int wireNumber = 0; wireNumber < Wiring.wires.Count; wireNumber++)
             {
                 if (socketType == SocketType.OUT)
                 {
-                    if (Patch.Wiring.wires[wireNumber].Source != null
-                        && Patch.Wiring.wires[wireNumber].Source.SocketType == socketType
-                        && Patch.Wiring.wires[wireNumber].Source.OscillatorId == oscillatorId
-                        && Patch.Wiring.wires[wireNumber].Indicator != null
-                        && Patch.Wiring.wires[wireNumber].Indicator.IsOn)
+                    if (Wiring.wires[wireNumber].Source != null
+                        && Wiring.wires[wireNumber].Source.SocketType == socketType
+                        && Wiring.wires[wireNumber].Source.OscillatorId == oscillatorId
+                        && Wiring.wires[wireNumber].Indicator != null
+                        && Wiring.wires[wireNumber].Indicator.IsOn)
                     {
                         return wireNumber;
                     }
                 }
                 else
                 {
-                    if (Patch.Wiring.wires[wireNumber].Destination != null
-                        && Patch.Wiring.wires[wireNumber].Destination.SocketType == socketType
-                        && Patch.Wiring.wires[wireNumber].Destination.OscillatorId == oscillatorId
-                        && Patch.Wiring.wires[wireNumber].Indicator != null
-                        && Patch.Wiring.wires[wireNumber].Indicator.IsOn)
+                    if (Wiring.wires[wireNumber].Destination != null
+                        && Wiring.wires[wireNumber].Destination.SocketType == socketType
+                        && Wiring.wires[wireNumber].Destination.OscillatorId == oscillatorId
+                        && Wiring.wires[wireNumber].Indicator != null
+                        && Wiring.wires[wireNumber].Indicator.IsOn)
                     {
                         return wireNumber;
                     }

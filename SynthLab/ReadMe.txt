@@ -18,7 +18,7 @@ FrameServer is collecting wave data from PolyServer and adds each sample from ea
 together to make one set of wave data to deliver as an AudioFrame, rather than delivering
 one set of wave data for each pressed key, each poly.
 
-PolyServer. There is one PolyServer for each 'poly'. The 'poly' is stored in Patch.Polyphony.
+PolyServer. There is one PolyServer for each 'poly'. The number of polys is 6.
 When the frame server calls each one of the PolyServers, those are responsible for collecting
 wave data from all oscillator used. 'Used' oscillators either has volume set higher than zero
 thus outputting sound, or are used as modulators.

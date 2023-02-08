@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
 using UwpControlsLibrary;
 using Windows.ApplicationModel.Core;
 using Windows.Devices.Midi;
@@ -11,7 +9,7 @@ using Windows.UI;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using UnhandledExceptionEventHandler = System.UnhandledExceptionEventHandler;
+using Windows.UI.Xaml.Media;
 
 namespace SynthLab
 {
@@ -34,10 +32,49 @@ namespace SynthLab
         public CompoundControl[] AdsrGUIs;
 
         [JsonIgnore]
-        public Settings settings;
+        public Rotator DisplayOnOff;
 
-        //[JsonIgnore]
-        //public GCSupressor GCSupressor;
+        /// <summary>
+        /// Settings dialog data.
+        /// </summary>
+        [JsonIgnore]
+        public Settings Settings;
+
+        /// <summary>
+        /// List of all oscillators, including polyphony (1'st dimension).
+        /// Since we have the same settings for all polys of an oscillator
+        /// this is not stored with a Patch. Instead a list OscillatorSettings
+        /// is stored with the Patch. 
+        /// </summary>
+        [JsonIgnore]
+        public List<List<Oscillator>> Oscillators;
+
+        /// <summary>
+        /// MIDI settings dialog data.
+        /// </summary>
+        [JsonIgnore]
+        public MidiSettings MidiSettings;
+
+        /// <summary>
+        /// Wiring contains all wires connected between oscillators. Wires differs between layouts
+        /// since connection between oscillators are affected by the different positions of the oscillators.
+        /// The wiring is set up using fields in the oscillators, so we do not need to store them in Patch
+        /// files.
+        /// </summary>
+        [JsonIgnore]
+        public Wiring Wiring = new Wiring();
+
+        [JsonIgnore]
+        public MainPage.Layouts Layout { get { return layout; } set { layout = value; ChangeLayout(); } }
+        private MainPage.Layouts layout;
+
+        public int chorusSpeed1;
+        public int chorusSpeed2;
+        public int chorusSpeed3;
+        public int chorusDepth1;
+        public int chorusDepth2;
+        public int chorusDepth3;
+
 
         [JsonIgnore]
         public EarCompensation EarCompensation;
@@ -47,19 +84,34 @@ namespace SynthLab
         public Controls Controls;
         public CompoundControl ControlPanel;
 
-        private Boolean oscillatorsCreated = false;
         private MidiIn midiIn;
+
+        /// <summary>
+        /// Each visible oscillator actually consist of 6 oscillators
+        /// in order to make it polyphonic up to 6 notes.
+        /// </summary>
         public KeyDispatcher[] dispatcher;
+
         public Boolean initDone = false;
         public DispatcherTimer updateTimer;
+        public DispatcherTimer midiInTimer;
+        //public DispatcherTimer selectDrumsetTimer;
+        //public DispatcherTimer selectWavefilesTimer;
+        public DispatcherTimer pitchBenderReleasedTimer;
+        private bool pitchBenderReleased;
         private int currentControl;
         private Size newSize;
-        private Boolean windowShapeIsGood = false;
+        //private Boolean windowShapeIsGood = false;
         public Boolean usingGraphicsCard = false;
         public Boolean graphicsCardAvailable = false;
-        public MidiSettings midiSettings;
+        public Wave[] wave;
+        public Drumset[] drumset;
+        public Rotator Chorus;
+        public Rotator Reverb;
+        public VerticalSlider ReverbSlider;
+        public Keyboard keyboard;
 
-        [JsonIgnore]
+                [JsonIgnore]
         public Canvas adsrCanvas;
 
         [JsonIgnore]
@@ -72,109 +124,16 @@ namespace SynthLab
         public uint SampleCount;
         public _compoundType selectedCompoundType;
         public bool hold = false;
-        private Rect hitArea;
 
         public MainPage()
         {
             this.InitializeComponent();
-            //Application.Current.Suspending += Current_Suspending;
         }
 
-        private void Current_Suspending(object sender, Windows.ApplicationModel.SuspendingEventArgs e)
-        {
-            StoreSettings();
-        }
-
-        private void UpdateTimer_Tick(object sender, object e)
-        {
-            int retryCount = 0;
-            if (allowGuiUpdates && initDone && currentOscillator != null && !hold)
-            {
-                updateTimer.Stop();
-                if (!windowShapeIsGood && retryCount > 0)
-                {
-                    windowShapeIsGood = ApplicationView.GetForCurrentView().TryResizeView(newSize);
-                    retryCount--;
-                }
-
-                if (Window.Current.Bounds.Width != Window.Current.Bounds.Height * 1920 / 1040)
-                {
-                    newSize = new Size(Window.Current.Bounds.Width, Window.Current.Bounds.Width * 1040 / 1920);
-                    windowShapeIsGood = ApplicationView.GetForCurrentView().TryResizeView(newSize);
-                    retryCount = 10;
-                }
-
-                if (selectedOscillator == null || selectedOscillator.Id > Patch.OscillatorCount - 1)
-                {
-                    if (currentOscillator != null)
-                    {
-                        selectedOscillator = currentOscillator;
-                    }
-                    else
-                    {
-                        selectedOscillator = Patch.Oscillators[0][0];
-                    }
-                }
-
-                //if (selectedOscillator.Id < Patch.OscillatorCount)
-                //{
-                //    if (Patch.Oscillators[0][currentOscillator.Id].ViewMe == false)
-                //    {
-                //        // Turn off all view leds:
-                //        for (int osc = 0; osc < Patch.OscillatorCount; osc++)
-                //        {
-                //            ((Rotator)OscillatorGUIs[osc].SubControls
-                //                .ControlsList[(int)OscillatorControls.VIEW_ME]).Selection = 0;
-                //            for (int poly = 0; poly < Patch.Polyphony; poly++)
-                //            {
-                //                Patch.Oscillators[poly][osc].ViewMe = false;
-                //            }
-                //        }
-
-                //        try
-                //        {
-                //            // Turn on view led for selected oscillator;
-                //            ((Rotator)OscillatorGUIs[selectedOscillator.Id].SubControls
-                //                .ControlsList[(int)OscillatorControls.VIEW_ME]).Selection = 1;
-                //            for (int poly = 0; poly < Patch.Polyphony; poly++)
-                //            {
-                //                Patch.Oscillators[poly][selectedOscillator.Id].ViewMe = true;
-                //            }
-                //        }
-                //        catch (Exception exception)
-                //        {
-                //            ContentDialog error = new Error("Unexpected error using FFT: " + exception.Message);
-                //            _ = error.ShowAsync();
-                //        }
-                //    }
-                //}
-
-                if (Patch.OscillatorsInLayout > 4)
-                {
-                    DrawAdsr(0, selectedOscillator.Id);
-                    ((Graph)PitchEnvelopeGUIs[0].SubControls.ControlsList[(int)PitchEnvelopeControls.GRAPH])
-                        .Draw(selectedOscillator.PitchEnvelope.Points);
-                }
-                else
-                {
-                    for (int osc = 0; osc < Patch.OscillatorsInLayout; osc++)
-                    {
-                        //selectedOscillator = Patch.Oscillators[0][osc];
-                        DrawAdsr(OscillatorToAdsr(selectedOscillator.Id), selectedOscillator.Id);
-                        ((Graph)PitchEnvelopeGUIs[selectedOscillator.Id].SubControls.ControlsList[(int)PitchEnvelopeControls.GRAPH]).Draw();
-                    }
-                    //selectedOscillator = currentOscillator;
-                }
-
-                oscilloscope.Draw(selectedOscillator);
-
-                ((DigitalDisplay)DisplayGUI.SubControls.ControlsList[(int)DisplayControls.DIGITS])
-                    .DisplayValue(currentOscillator.FrequencyInUse);
-                UpdateGui();
-                allowGuiUpdates = false;
-                updateTimer.Start();
-            }
-        }
+        //private void Current_Suspending(object sender, Windows.ApplicationModel.SuspendingEventArgs e)
+        //{
+        //    StoreSettings();
+        //}
 
         private async void imgClickArea_ImageOpened(object sender, RoutedEventArgs e)
         {
@@ -185,14 +144,13 @@ namespace SynthLab
             titleBar.ButtonBackgroundColor = Color.FromArgb(0, 128, 128, 128);
             titleBar.ButtonForegroundColor = Color.FromArgb(0, 128, 128, 128);
 
-            //GCSupressor = new GCSupressor();
-
             // Read local store and initiate Patch:
             //await LoadLocalState(); // This function has to be updated, see comment in function
 
-            settings = new Settings();
-
-            // Create the frame server:
+            Patch = new Patch();
+            Settings = new Settings();
+            Settings.MidiInPorts.Items.Add("All midi inputs");
+            MidiSettings = new MidiSettings(this);
 
             // Create MidiIn:
             midiIn = new MidiIn(this);
@@ -203,22 +161,26 @@ namespace SynthLab
             }
             await midiIn.Init();
 
-            await LoadLocalState(); // This function has to be updated, see comment in function
+            //await LoadLocalState(); // This function has to be updated, see comment in function
 
             CreateLayout(Layouts.FOUR_OSCILLATORS);
-            FrameServer.Init();
+            //FrameServer.Init();
 
             foreach (string port in midiIn.portNames)
             {
-                settings.MidiInPorts.Items.Add(port);
+                Settings.MidiInPorts.Items.Add(port);
             }
 
-            // Create dispatchers:
-            dispatcher = new KeyDispatcher[17];
-            for (int ch = 0; ch < 17; ch++)
+            //// Create dispatchers:
+            dispatcher = new KeyDispatcher[12];
+            for (int osc = 0; osc < 12; osc++)
             {
-                dispatcher[ch] = new KeyDispatcher(this, Patch.Polyphony);
+                dispatcher[osc] = new KeyDispatcher(this);
             }
+
+            // Create wave and drumset lists:
+            wave = new Wave[12];
+            drumset = new Drumset[12];
 
             // Init keyboard frequencies:
             InitFrequencies();
@@ -227,52 +189,16 @@ namespace SynthLab
             EarCompensation = new EarCompensation(this);
 
             // Create oscillators:
-            Patch.CreateOscillators(this);
-            selectedOscillator = Patch.Oscillators[0][0];
-
-            //// See if we can use the graphics card to speed up oscillators:
-            //await Task.Delay(1);
-
-            currentOscillator = Patch.Oscillators[0][0];
-            oscillatorsCreated = true;
-            //allowGuiUpdates = true;
-
-            //// Create updateTimer:
-            //updateTimer = new DispatcherTimer();
-            //updateTimer.Interval = new TimeSpan(0, 0, 0, 0, 50);
-            //updateTimer.Tick += UpdateTimer_Tick;
-            //updateTimer.Start();
-
-            //while (!oscillatorsCreated)
-            //{
-            //    await Task.Delay(10);
-            //}
-
-            // Createfilters:
-            //CreateFilters();
-            //Patch.Filter = new Filter[Patch.Polyphony][];
-            //for (int poly = 0; poly < Patch.Polyphony; poly++)
-            //{
-            //    Patch.Filter[poly] = new Filter[12];
-            //    for (int osc = 0; osc < 12; osc++)
-            //    {
-            //        Patch.Filter[poly][osc] = new Filter(this, poly, osc, SampleCount);
-            //    }
-            //}
-
-            // Create WaveShapes:
-            //CreateWaveShapes();
-            //WaveShape = new WaveShape[Patch.Polyphony][];
-            //for (int poly = 0; poly < Patch.Polyphony; poly++)
-            //{
-            //    WaveShape[poly] = new WaveShape[12];
-            //    for (int osc = 0; osc < 12; osc++)
-            //    {
-            //        WaveShape[poly][osc] = new WaveShape(this, poly, osc);
-            //    }
-            //}
+            CreateOscillators(this);
+            selectedOscillator = Oscillators[0][0];
+            currentOscillator = Oscillators[0][0];
 
             CreateKeyboardAndControlPanel();
+
+            oscilloscope = new Oscilloscope(this);
+            oscilloscope.VoltsPerCm = 0;
+            oscilloscope.MillisecondsPerCm = .5;
+
             CreateControls();
             CreateWiring();
 
@@ -282,22 +208,17 @@ namespace SynthLab
             Controls.ResizeControls(gridControlPanel, Window.Current.Bounds);
             Controls.SetControlsUniform(gridControlPanel);
 
-            //if (usingGraphicsCard)
-            //{
-            //    ((Rotator)ControlPanel.SubControls.ControlsList[(int)ControlPanelControls.USING_GRAPHICS_CARD]).Selection = 1;
-            //}
-
             Controls.HideOriginalControls();
             imgHangingWire.Visibility = Visibility.Collapsed;
             newSize = new Size(Window.Current.Bounds.Width, Window.Current.Bounds.Width * 1040 / 1920);
 
-            for (int poly = 0; poly < Patch.Polyphony; poly++)
+            for (int poly = 0; poly < 6; poly++)
             {
-                for (int osc = 0; osc < Patch.OscillatorCount; osc++)
+                for (int osc = 0; osc < Patch.OscillatorsInLayout; osc++)
                 {
-                    Patch.Oscillators[poly][osc].InitOscillator(69, 64);
-                    Patch.Oscillators[poly][osc].CreateWaveData(SampleCount);
-                    Patch.Oscillators[poly][osc].MakeGraphData(66);
+                    Oscillators[poly][osc].InitOscillator(0, 69, 64);
+                    //Oscillators[poly][osc].CreateWaveData(SampleCount);
+                    //Oscillators[poly][osc].MakeGraphData(66);
                 }
             }
 
@@ -307,12 +228,180 @@ namespace SynthLab
             updateTimer.Tick += UpdateTimer_Tick;
             updateTimer.Start();
 
+            // Create midiInTimer:
+            midiInTimer = new DispatcherTimer();
+            midiInTimer.Interval = new TimeSpan(0, 0, 0, 0, 1);
+            midiInTimer.Tick += MidiInTimer_Tick;
+            midiInTimer.Start();
+
+            //// Create selectWavefilesTimer:
+            //selectWavefilesTimer = new DispatcherTimer();
+            //selectWavefilesTimer.Interval = new TimeSpan(0, 0, 0, 1);
+            //selectWavefilesTimer.Tick += SelectWavefilesTimer_Tick;
+
+            //// Create selectDrumsetTimer:
+            //selectDrumsetTimer = new DispatcherTimer();
+            //selectDrumsetTimer.Interval = new TimeSpan(0, 0, 0, 1);
+            //selectDrumsetTimer.Tick += SelectDrumsetTimer_Tick;
+
+            // Create pitch bender release timer:
+            pitchBenderReleasedTimer = new DispatcherTimer();
+            pitchBenderReleasedTimer.Interval = new TimeSpan(0, 0, 0, 0, 1);
+            pitchBenderReleasedTimer.Tick += PitchBenderReleasedTimer_Tick;
+
             allowGuiUpdates = true;
             initDone = true;
             //GCSupressor.SupressPatch(Patch);
             FrameServer.StartAudio();
 
-            midiSettings = new MidiSettings(this, Patch);
+            //MidiSettings = new MidiSettings(this);
+            midiInMessageQueue = new IMidiMessage[8192]; // MIDI sends less than 1000 messages per second,
+                                                         // so this is an eight second long buffer. Note
+                                                         // that when using MIDI merge and multiple keyboards,
+                                                         // or an e.g. DAW, this is divided by keyboard or
+                                                         // track count.
+
+            // Hook up keyboard entries:
+            Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
+            Window.Current.CoreWindow.KeyUp += CoreWindow_KeyUp;
+        }
+
+        /// <summary>
+        /// CreateOscillators creates 12 sets of oscillators regardless of layout, and is called only at startup and patch load.
+        /// Switching layout does not re-create oscillators, thus keeps all oscillator settings including envelopes and filters.
+        /// The default settings are also set here, thus it can be used each time the GUI's are created.
+        /// Loading a patch uses the copy constructor to copy settings into the oscillators.
+        /// </summary>
+        /// <param name="mainPage"></param>
+        public void CreateOscillators(MainPage mainPage)
+        {
+            Oscillators = new List<List<Oscillator>>();
+            for (int poly = 0; poly < 6; poly++)
+            {
+                Oscillators.Add(new List<Oscillator>());
+                for (int osc = 0; osc < 12; osc++)
+                {
+                    Oscillators[poly].Add(new Oscillator(mainPage));
+                    Oscillators[poly][osc].Init(mainPage);
+                    Oscillators[poly][osc].Id = osc;
+                    //Oscillators[poly][osc].PolyId = poly;
+                    Oscillators[poly][osc].WaveForm = WAVEFORM.SQUARE;
+                    //Oscillators[poly][osc].Filter = new Filter();
+                    //Oscillators[poly][osc].Filter.PostCreationInit(0);
+                }
+            }
+        }
+
+        /// <summary>
+        /// ChangeLayout updates GUI
+        /// </summary>
+        private void ChangeLayout()
+        {
+            switch (layout)
+            {
+                case MainPage.Layouts.FOUR_OSCILLATORS:
+                    Patch.OscillatorsInLayout = 4;
+                    break;
+                case MainPage.Layouts.SIX_OSCILLATORS:
+                    Patch.OscillatorsInLayout = 6;
+                    break;
+                case MainPage.Layouts.EIGHT_OSCILLATORS:
+                    Patch.OscillatorsInLayout = 8;
+                    break;
+                case MainPage.Layouts.TWELVE_OSCILLATORS:
+                    Patch.OscillatorsInLayout = 12;
+                    break;
+            }
+        }
+
+        private void UpdateTimer_Tick(object sender, object e)
+        {
+            //int retryCount = 0;
+            if (allowGuiUpdates && initDone && currentOscillator != null && !hold)
+            {
+                updateTimer.Stop();
+                //if (!windowShapeIsGood && retryCount > 0)
+                //{
+                //    windowShapeIsGood = ApplicationView.GetForCurrentView().TryResizeView(newSize);
+                //    retryCount--;
+                //}
+
+                //if (Window.Current.Bounds.Width != Window.Current.Bounds.Height * 1920 / 1040)
+                //{
+                //    newSize = new Size(Window.Current.Bounds.Width, Window.Current.Bounds.Width * 1040 / 1920);
+                //    windowShapeIsGood = ApplicationView.GetForCurrentView().TryResizeView(newSize);
+                //    retryCount = 10;
+                //}
+
+                if (selectedOscillator == null || selectedOscillator.Id < 0 || selectedOscillator.Id > 11)
+                {
+                    if (currentOscillator != null)
+                    {
+                        selectedOscillator = currentOscillator;
+                    }
+                    else
+                    {
+                        selectedOscillator = Oscillators[0][0];
+                    }
+                }
+
+                UpdateGui();
+            }
+            if (DisplayOnOff.Selection > 0 && allowUpdateOscilloscope && oscilloscope.waveFrames != null)
+            {
+                if (KeyDispatcher.AnyOscillatorInUse(this))
+                {
+                    //oscilloscope.MakeGraph(60);
+                    // TODO: Findout how to use correct value from oscillator and which oscillator!
+                    ((Graph)DisplayGUI.SubControls.ControlsList[(int)DisplayControls.OSCILLOGRAPH]).Draw(oscilloscope.MakeGraph(SampleCount));
+                }
+                else
+                {
+                    //oscilloscope.ClearGraph();
+                    ((Graph)DisplayGUI.SubControls.ControlsList[(int)DisplayControls.OSCILLOGRAPH]).Draw(oscilloscope.ClearGraph());
+                }
+            }
+            allowUpdateOscilloscope = false;
+            allowGuiUpdates = false;
+
+            updateTimer.Start();
+        }
+
+        private void PitchBenderReleasedTimer_Tick(object sender, object e)
+        {
+            if (pitchBenderReleased)
+            {
+                if (((VerticalSlider)Controls.ControlsList[(int)OtherControls.PITCH_BENDER_WHEEL]).Value > 8192 + 1024)
+                {
+                    ((VerticalSlider)Controls.ControlsList[(int)OtherControls.PITCH_BENDER_WHEEL]).Value -= 1024;
+                }
+                else if (((VerticalSlider)Controls.ControlsList[(int)OtherControls.PITCH_BENDER_WHEEL]).Value < 8192 - 1024)
+                {
+                    ((VerticalSlider)Controls.ControlsList[(int)OtherControls.PITCH_BENDER_WHEEL]).Value += 1024;
+                }
+                else
+                {
+                    ((VerticalSlider)Controls.ControlsList[(int)OtherControls.PITCH_BENDER_WHEEL]).Value = 8192;
+                    pitchBenderReleased = false;
+                    pitchBenderReleasedTimer.Stop();
+                }
+
+                for (int ch = 0; ch < 16; ch++)
+                {
+                    if (((VerticalSlider)Controls.ControlsList[(int)OtherControls.PITCH_BENDER_WHEEL]).Value > 8192)
+                    {
+                        PitchBend[ch] = (1 + (((VerticalSlider)Controls.ControlsList[(int)OtherControls.PITCH_BENDER_WHEEL]).Value - 8192f) / 8191f);
+                    }
+                    else if (((VerticalSlider)Controls.ControlsList[(int)OtherControls.PITCH_BENDER_WHEEL]).Value < 8192)
+                    {
+                        PitchBend[ch] = 0.5 + (((VerticalSlider)Controls.ControlsList[(int)OtherControls.PITCH_BENDER_WHEEL]).Value / 16383f);
+                    }
+                    else
+                    {
+                        PitchBend[ch] = 1f;
+                    }
+                }
+            }
         }
 
         // When app size is changed, all controls must also be resized,
@@ -324,12 +413,12 @@ namespace SynthLab
                 if (e.NewSize.Width != e.PreviousSize.Width)
                 {
                     newSize = new Size(e.NewSize.Width, e.NewSize.Width * 1040 / 1920);
-                    windowShapeIsGood = false;
+                    //windowShapeIsGood = false;
                 }
                 if (e.NewSize.Height != e.PreviousSize.Height)
                 {
                     newSize = new Size(e.NewSize.Width * 1920 / 1040, e.NewSize.Height);
-                    windowShapeIsGood = false;
+                    //windowShapeIsGood = false;
                 }
                 Controls.ResizeControls(gridControls, Window.Current.Bounds);
                 Controls.ResizeControls(gridControlPanel, Window.Current.Bounds);

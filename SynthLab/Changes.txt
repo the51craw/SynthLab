@@ -1,0 +1,4 @@
+﻿DX style FM synthesis now allows for using different frequency in modulators which allows you to create much more different sounds.
+FM modulation can now be selected to cause changes from base frequency up to plus one octave or from down one octave to up one octave.
+They synthesizer program code now contains a method that uses much less CPU power. This new method is used with setups that are not too complicated, thus allowing for some synthesis to run on low-end or older computers.
+There are more possibilities to combine different modulations, e.g. a DX style modulation can have any AM and FM modulation applied to any of the oscillators involved in the DX style synthesis.

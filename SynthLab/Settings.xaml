@@ -11,35 +11,261 @@
     SecondaryButtonText="Cancel"
     PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
     SecondaryButtonClick="ContentDialog_SecondaryButtonClick"
-    Background="#ffe1c7aa" > 
+    Background="#ffe1c7aa" Opened="ContentDialog_Opened" > 
 
     <Grid x:FieldModifier="public">
-        <Grid x:Name="gridControls4" Width="395" Height="104" >
+        <Grid x:Name="gridControls" Width="395" Height="354" >
             <Grid x:Name="main" Visibility="Visible" >
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="108" />
+                    <RowDefinition Height="26" />
+                    <RowDefinition Height="4" />
+                    <RowDefinition Height="26" />
+                    <RowDefinition Height="26" />
+                    <RowDefinition Height="26" />
+                    <RowDefinition Height="4" />
+                    <RowDefinition Height="26" />
                     <RowDefinition Height="26" />
                     <RowDefinition Height="26" />
                     <RowDefinition Height="26" />
                     <RowDefinition Height="26" />
                 </Grid.RowDefinitions>
-                <Image Grid.Row="0" x:Name="KeyPriorityStayDead" Source="ms-appx:///Images/KeyPriorityStayDead.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" Tapped="KeyPriorityStayDead_Tapped" PointerWheelChanged="KeyPriorityStayDead_PointerWheelChanged" />
-                <Image Grid.Row="0" x:Name="KeyPriorityReleaseFirst" Source="ms-appx:///Images/KeyPriorityReleaseFirst.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" Tapped="KeyPriorityStayDead_Tapped" PointerWheelChanged="KeyPriorityStayDead_PointerWheelChanged" />
-                <Image Grid.Row="1" x:Name="Polyphony6" Tag="0" Source="ms-appx:///Images/Polyphony6.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" Tapped="Polyphony_Tapped" PointerWheelChanged="Polyphony_PointerWheelChanged" />
-                <Image Grid.Row="1" x:Name="Polyphony8" Tag="1" Source="ms-appx:///Images/Polyphony8.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" Tapped="Polyphony_Tapped" PointerWheelChanged="Polyphony_PointerWheelChanged" />
-                <Image Grid.Row="1" x:Name="Polyphony10" Tag="2" Source="ms-appx:///Images/Polyphony10.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" Tapped="Polyphony_Tapped" PointerWheelChanged="Polyphony_PointerWheelChanged" />
-                <Image Grid.Row="1" x:Name="Polyphony12" Tag="3" Source="ms-appx:///Images/Polyphony12.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" Tapped="Polyphony_Tapped" PointerWheelChanged="Polyphony_PointerWheelChanged" />
-                <Image Grid.Row="1" x:Name="Polyphony14" Tag="4" Source="ms-appx:///Images/Polyphony14.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" Tapped="Polyphony_Tapped" PointerWheelChanged="Polyphony_PointerWheelChanged" />
-                <Image Grid.Row="1" x:Name="Polyphony16" Tag="5" Source="ms-appx:///Images/Polyphony16.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" Tapped="Polyphony_Tapped" PointerWheelChanged="Polyphony_PointerWheelChanged" />
-                <Image Grid.Row="1" x:Name="Polyphony18" Tag="6" Source="ms-appx:///Images/Polyphony18.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" Tapped="Polyphony_Tapped" PointerWheelChanged="Polyphony_PointerWheelChanged" />
-                <Image Grid.Row="1" x:Name="Polyphony20" Tag="7" Source="ms-appx:///Images/Polyphony20.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" Tapped="Polyphony_Tapped" PointerWheelChanged="Polyphony_PointerWheelChanged" />
-                <Image Grid.Row="1" x:Name="Polyphony22" Tag="8" Source="ms-appx:///Images/Polyphony22.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" Tapped="Polyphony_Tapped" PointerWheelChanged="Polyphony_PointerWheelChanged" />
-                <Image Grid.Row="1" x:Name="Polyphony24" Tag="9" Source="ms-appx:///Images/Polyphony24.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" Tapped="Polyphony_Tapped" PointerWheelChanged="Polyphony_PointerWheelChanged" />
-                <Image Grid.Row="1" x:Name="Polyphony26" Tag="10" Source="ms-appx:///Images/Polyphony26.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" Tapped="Polyphony_Tapped" PointerWheelChanged="Polyphony_PointerWheelChanged" />
-                <Image Grid.Row="1" x:Name="Polyphony28" Tag="11" Source="ms-appx:///Images/Polyphony28.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" Tapped="Polyphony_Tapped" PointerWheelChanged="Polyphony_PointerWheelChanged" />
-                <Image Grid.Row="1" x:Name="Polyphony30" Tag="12" Source="ms-appx:///Images/Polyphony30.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" Tapped="Polyphony_Tapped" PointerWheelChanged="Polyphony_PointerWheelChanged" />
-                <Image Grid.Row="1" x:Name="Polyphony32" Tag="13" Source="ms-appx:///Images/Polyphony32.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" Tapped="Polyphony_Tapped" PointerWheelChanged="Polyphony_PointerWheelChanged" />
+                <Image Grid.Row="0" x:Name="KeyPriorityStayDead" Source="ms-appx:///Images/KeyPriorityStayDead.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" VerticalAlignment="Top" Tapped="KeyPriorityStayDead_Tapped" RightTapped="KeyPriorityStayDead_RightTapped" PointerWheelChanged="KeyPriorityStayDead_PointerWheelChanged" />
+                <Image Grid.Row="0" x:Name="KeyPriorityReleaseFirst" Source="ms-appx:///Images/KeyPriorityReleaseFirst.png" x:FieldModifier="public" Stretch="None" Visibility="Collapsed" VerticalAlignment="Top" Tapped="KeyPriorityStayDead_Tapped" RightTapped="KeyPriorityStayDead_RightTapped" PointerWheelChanged="KeyPriorityStayDead_PointerWheelChanged" />
 
+                <Grid Grid.Row="1" VerticalAlignment="Top">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="26" />
+                        <RowDefinition Height="26" />
+                        <RowDefinition Height="26" />
+                        <RowDefinition Height="26" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="131" />
+                        <ColumnDefinition Width="132" />
+                        <ColumnDefinition Width="132" />
+                    </Grid.ColumnDefinitions>
+                    <Image Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" x:Name="ChorusSpeedDepth" Source="ms-appx:///Images/ChorusSpeedDepth.png" Stretch="Fill" />
+                    <Image Grid.Row="1" Grid.Column="0" x:Name="ChorusSetting1" Source="ms-appx:///Images/ChorusSetting1.png" Stretch="Fill" />
+                    <Slider Grid.Row="1" Grid.Column="1" x:Name="chorusSpeed1" Margin="4, 0, 2, 0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Minimum="1" Maximum="10" ValueChanged="chorusSpeed1_ValueChanged" />
+                    <Slider Grid.Row="1" Grid.Column="2" x:Name="chorusDepth1" Margin="2, 0, 4, 0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Minimum="1" Maximum="10" ValueChanged="chorusDepth1_ValueChanged" />
+                    <Image Grid.Row="2" Grid.Column="0" x:Name="ChorusSetting2" Source="ms-appx:///Images/ChorusSetting2.png" Stretch="Fill" />
+                    <Slider Grid.Row="2" Grid.Column="1" x:Name="chorusSpeed2" Margin="4, 0, 2, 0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Minimum="1" Maximum="10" ValueChanged="chorusSpeed2_ValueChanged" />
+                    <Slider Grid.Row="2" Grid.Column="2" x:Name="chorusDepth2" Margin="2, 0, 4, 0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Minimum="1" Maximum="10" ValueChanged="chorusDepth2_ValueChanged" />
+                    <Image Grid.Row="3" Grid.Column="0" x:Name="ChorusSetting3" Source="ms-appx:///Images/ChorusSetting3.png" Stretch="Fill" />
+                    <Slider Grid.Row="3" Grid.Column="1" x:Name="chorusSpeed3" Margin="4, 0, 2, 0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Minimum="1" Maximum="10" ValueChanged="chorusSpeed3_ValueChanged" />
+                    <Slider Grid.Row="3" Grid.Column="2" x:Name="chorusDepth3" Margin="2, 0, 4, 0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Minimum="1" Maximum="10" ValueChanged="chorusDepth3_ValueChanged" />
+                </Grid>
                 <ComboBox x:Name="MidiInPorts" Grid.Row="2" HorizontalAlignment="Stretch" FontFamily="Ethnocentric" x:FieldModifier="public" />
+                <TextBlock Grid.Row="4" Text="Increase volume gradually for" FontFamily="Ethnocentric" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                <TextBlock Grid.Row="5" Text="sine waves under 200 Hz by a" FontFamily="Ethnocentric" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                <Grid Grid.Row="6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="factor " FontFamily="Ethnocentric" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                    <Image Grid.Column="1" x:Name="imgFactor1" Tag="0" Source="ms-appx:///Images/Factor1.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" Tapped="Factor_Tapped" RightTapped="Factor_RightTapped" PointerWheelChanged="Factor_PointerWheelChanged" />
+                    <Image Grid.Column="1" x:Name="imgFactor2" Tag="1" Source="ms-appx:///Images/Factor2.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" Tapped="Factor_Tapped" RightTapped="Factor_RightTapped" PointerWheelChanged="Factor_PointerWheelChanged" />
+                    <Image Grid.Column="1" x:Name="imgFactor3" Tag="2" Source="ms-appx:///Images/Factor3.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" Tapped="Factor_Tapped" RightTapped="Factor_RightTapped" PointerWheelChanged="Factor_PointerWheelChanged" />
+                    <Image Grid.Column="1" x:Name="imgFactor4" Tag="3" Source="ms-appx:///Images/Factor4.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" Tapped="Factor_Tapped" RightTapped="Factor_RightTapped" PointerWheelChanged="Factor_PointerWheelChanged" />
+                    <Image Grid.Column="1" x:Name="imgFactor5" Tag="4" Source="ms-appx:///Images/Factor5.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" Tapped="Factor_Tapped" RightTapped="Factor_RightTapped" PointerWheelChanged="Factor_PointerWheelChanged" />
+                    <Image Grid.Column="1" x:Name="imgFactor6" Tag="5" Source="ms-appx:///Images/Factor6.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" Tapped="Factor_Tapped" RightTapped="Factor_RightTapped" PointerWheelChanged="Factor_PointerWheelChanged" />
+                    <Image Grid.Column="1" x:Name="imgFactor7" Tag="6" Source="ms-appx:///Images/Factor7.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" Tapped="Factor_Tapped" RightTapped="Factor_RightTapped" PointerWheelChanged="Factor_PointerWheelChanged" />
+                    <Image Grid.Column="1" x:Name="imgFactor8" Tag="7" Source="ms-appx:///Images/Factor8.png" x:FieldModifier="public" Stretch="None" Visibility="Visible" Tapped="Factor_Tapped" RightTapped="Factor_RightTapped" PointerWheelChanged="Factor_PointerWheelChanged" />
+                </Grid>
+                <Image Grid.Row="8" Source="ms-appx:///Images/ControlChangeMapping.png" Stretch="None" Visibility="Visible" />
+                <ComboBox x:Name="cbAffectedOscillator" Grid.Row="9" HorizontalAlignment="Stretch" FontFamily="Ethnocentric" x:FieldModifier="public" SelectionChanged="cbAffectedOscillator_SelectionChanged">
+                    <ComboBoxItem>
+                        <x:String>Oscillator 1</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Oscillator 2</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Oscillator 3</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Oscillator 4</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Oscillator 5</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Oscillator 6</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Oscillator 7</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Oscillator 8</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Oscillator 9</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Oscillator 10</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Oscillator 11</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Oscillator 12</x:String>
+                    </ComboBoxItem>
+                </ComboBox>
+                <ComboBox x:Name="cbCCNumber" Grid.Row="10" HorizontalAlignment="Stretch" FontFamily="Ethnocentric" x:FieldModifier="public" SelectionChanged="cbCCNumber_SelectionChanged">
+                    <ComboBoxItem>
+                        <x:String>Breath Controller</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 3</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Foot Controller</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 5</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 6</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Channel Volume</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Balance</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 9</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Pan</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Expression</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Effect 1</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Effect 2</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 14</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 15</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Controller 1</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Controller 2</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Controller 3</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Controller 4</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 20</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 21</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 22</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 23</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 24</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 25</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 26</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 27</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 28</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 29</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 30</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>CC 31</x:String>
+                    </ComboBoxItem>
+                </ComboBox>
+                <ComboBox x:Name="cbCCMapping" Grid.Row="11" HorizontalAlignment="Stretch" FontFamily="Ethnocentric" x:FieldModifier="public" SelectionChanged="cbCCMapping_SelectionChanged">
+                    <ComboBoxItem>
+                        <x:String>Not mapped</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Osc AM modulation depth</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Osc FM modulation depth</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Osc XM modulation depth</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Osc frequency</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Osc fine tune</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Osc volume</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Filter Q</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Filter freq</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Filter key follow</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Filter gain</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Filter mix</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Pitch envelope depth</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Pitch envelope speed</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>ADSR attack time</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>ADSR decay time</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>ADSR sustain level</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>ADSR release time</x:String>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <x:String>Pitch bend</x:String>
+                    </ComboBoxItem>
+                </ComboBox>
             </Grid>
         </Grid>
     </Grid>

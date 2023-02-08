@@ -9,10 +9,10 @@
 
   <Identity
     Name="34533MrMartin.MySynthesizerLaboratory"
-    Publisher="CN=MrMartin"
-    Version="1.0.15.0" />
+    Publisher="CN=58B8F239-F020-4CC5-9BF5-DC3993969183"
+    Version="1.0.66.0" />
 
-  <mp:PhoneIdentity PhoneProductId="3ad1c941-1780-453e-9870-aeb893080f3a" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="cfc39d41-5f7d-4346-987b-a923ad9b90b9" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>My Synthesizer Laboratory</DisplayName>

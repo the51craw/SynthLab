@@ -1,12 +1,7 @@
 ﻿using MathNet.Numerics.IntegralTransforms;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using UwpControlsLibrary;
 using Windows.UI.Xaml.Controls;
 
 namespace SynthLab
@@ -20,8 +15,6 @@ namespace SynthLab
         public double Mix;
         public int FilterFunction = 0;
         public int ModulationWheelTarget = 0;
-        //public int Id;
-        //public int polyId;
 
         [JsonIgnore]
         public MainPage mainPage;
@@ -34,28 +27,49 @@ namespace SynthLab
         /// </summary>
         [JsonIgnore]
         public Complex[] fftData;
-        [JsonIgnore]
-        public Complex[] fftHistory;
 
         [JsonIgnore]
         public Oscillator oscillator;
 
-        //public void Init(int poly, int oscillatorId)
+        //public Filter(MainPage mainPage, Oscillator oscillator)
         //{
-        //    this.Id = oscillatorId;
-        //    this.polyId = poly;
+        //    this.mainPage = mainPage;
+        //    this.oscillator = oscillator;
+        //    KeyboardFollow = 127;
         //}
 
-        public Filter(MainPage mainPage, Oscillator oscillator)
+        [JsonConstructor]
+        public Filter() { }
+
+        public Filter(MainPage mainPage)
         {
             this.mainPage = mainPage;
-            this.oscillator = oscillator;
+            this.FilterFunction = 0;
+            this.Mix = 0;
+            this.FrequencyCenter = 0;
+            this.Gain = 0;
+            this.KeyboardFollow = 127;
+            this.ModulationWheelTarget = 0;
+            this.Q = 0;
         }
 
-        public void PostCreationInit()
+        public Filter(Oscillator oscillator)
         {
-            fftData = new Complex[mainPage.SampleCount];
-            for (int i = 0; i < mainPage.SampleCount; i++)
+            this.mainPage = oscillator.mainPage;
+            this.oscillator = oscillator;
+            this.FilterFunction = oscillator.Filter.FilterFunction;
+            this.Mix = oscillator.Filter.Mix;
+            this.FrequencyCenter = oscillator.Filter.FrequencyCenter;
+            this.Gain = oscillator.Filter.Gain;
+            this.KeyboardFollow = oscillator.Filter.KeyboardFollow;
+            this.ModulationWheelTarget = oscillator.Filter.ModulationWheelTarget;
+            this.Q = oscillator.Filter.Q;
+        }
+
+        public void PostCreationInit(uint requestedNumberOfSamples)
+        {
+            fftData = new Complex[requestedNumberOfSamples];
+            for (int i = 0; i < requestedNumberOfSamples; i++)
             {
                 fftData[i] = new Complex(0, 0);
             }
@@ -72,145 +86,68 @@ namespace SynthLab
                     fftData[i] = waveData[i];
                 }
 
-                try
-                {
-                    Fourier.Forward(fftData, FourierOptions.AsymmetricScaling);
-                }
-                catch (Exception exception)
-                {
-                    //ContentDialog error = new Error("Unexpected error using FFT: " + exception.Message);
-                    //_ = error.ShowAsync();
-                }
+                // Forward Fourier transformation:
+                Fourier.Forward(fftData, FourierOptions.AsymmetricScaling);
 
                 // Then filter the data:
                 double q;
                 double fc = 440;
                 double y;
 
-                //switch (Filter.FilterFunction)
-                //{
-                //    case (int)FilterFunction.FIXED:
-                //        //q = Math.Pow((double)Filter.Q * (double)Filter.Q / fftData.Length, 2f) / 100f;
-                //        q = Math.Pow((double)Filter.Q * (double)Filter.Q / 440, 2f) / 100f;
-                //        fc = key * (Filter.KeyboardFollow / 128) + (Filter.CenterFrequency - 64);
-                //        break;
-                //    case (int)FilterFunction.ADSR_POSITIVE:
-                //        q = Math.Pow((double)Filter.Q * (double)Filter.Q / fftData.Length, 2f) / 100f;
-                //        fc = (int)(Adsr.AdsrLevel * Filter.Gain);
-                //        break;
-                //    case (int)FilterFunction.ADSR_NEGATIVE:
-                //        q = Math.Pow((double)Filter.Q * (double)Filter.Q / fftData.Length, 2f) / 100f;
-                //        fc = 1 - (int)(Adsr.AdsrLevel) * Filter.Gain;
-                //        break;
-                //    case (int)FilterFunction.AM_MODULATOR:
-                //        if (AM_Modulator != null)
-                //        {
-                //            q = Math.Pow((double)Filter.Q * (double)Filter.Q / fftData.Length, 2f) / 100f;
-                //        }
-                //        break;
-                //    case (int)FilterFunction.FM_MODULATOR:
-                //        if (FM_Modulator != null)
-                //        {
-                //            q = Math.Pow((double)Filter.Q * (double)Filter.Q / fftData.Length, 2f) / 100f;
-                //        }
-                //        break;
-                //    case (int)FilterFunction.XM_MODULATOR:
-                //        if (XM_Modulator != null)
-                //        {
-                //            q = Math.Pow((double)Filter.Q * (double)Filter.Q / fftData.Length, 2f) / 100f;
-                //        }
-                //        break;
-                //}
-                //fc = (uint)((uint)((FrequencyInUse + (WaveShape.CenterFrequency - 64) / 12.7f) * WaveShape.KeyboardFollow / (double)127f) / FrequencyInUse * mainPage.SampleCount);
-                //fc = (uint)(mainPage.Patch.Oscillators[0][Id].FrequencyInUse / 440f * mainPage.SampleCount *
-                //    ((Knob)mainPage.FilterGUIs[Id].SubControls.ControlsList[(int)FilterControls.FREQUENCY_CENTER]).Value);
-
                 // MIDI key = 0 - 127 => fcKey = 8.176 - 12543.850 Hz
                 // Fc knob = 0 - 127 => fc = 440 - fcKey
                 // = 440 + fcKnob * (fcKey - 440)
-                double kf = 440 + KeyboardFollow * (mainPage.NoteFrequency[Key] - 440);
-                q = Q / 4.0;
+                double keyFrequency = 440 + KeyboardFollow * (mainPage.NoteFrequency[Key] - 440) / 127.0;
+                q = Q / 2.0;
                 q = Math.Pow(q * q / fftData.Length, 2f) / 100.0;
                 switch (FilterFunction)
                 {
                     case 1:
-                        fc = kf / (12543.850 - 8.176) + FrequencyCenter / 16.0;
+                        // 0 - 127 => 8.176 - 12543.850
+                        // 63 => kf
+                        // KeyboardFollow = 0 -> FrequencyCenter 0 - 127 => 8.176 - 12543.850
+                        // KeyboardFollow = 63 -> FrequencyCenter 0 - 127 => (440 - 8.176) * 0.5 - (12543.850 - 440) * 0.5 where '0.5' is KeyboardFollow / 127
+                        // KeyboardFollow = 127 -> FrequencyCenter 0 - 127 => 440 - 440
+                        // KeyboardFollow = n -> FrequencyCenter 0 - 127 => (440 - 8.176) * n / 127 - (12543.850 - 440) * n / 127
+                        // fc = keyFrequency + ((FrequencyCenter - 69) / 63) * 12543.850
+                        fc = keyFrequency / 25.4 + (FrequencyCenter - 63) / 4.0;
+                        //fc = keyFrequency + ((FrequencyCenter - 69) / 63.0) * 12543.850;
+                        //fc = keyFrequency / (12543.850 - 8.176) + ((FrequencyCenter - 69) / 63.0) * 12543.850;
                         break;
                     case 2:
-                        fc = kf / (12543.850 - 8.176) + oscillator.Adsr.AdsrLevel * FrequencyCenter / 16.0;
+                        fc = oscillator.Adsr.AdsrLevel * keyFrequency / 25.4 + (FrequencyCenter - 63) / 4.0;
                         break;
                     case 3:
-                        fc = kf / (12543.850 - 8.176) + (1 - oscillator.Adsr.AdsrLevel) * FrequencyCenter / 16.0;
+                        fc = (1 - oscillator.Adsr.AdsrLevel) * keyFrequency / 25.4 + (FrequencyCenter - 63) / 4.0;
                         break;
                     case 4:
-                        fc = kf / (12543.850 - 8.176) + oscillator.PitchEnvelope.Value * FrequencyCenter / 16.0;
+                        fc = (oscillator.PitchEnvelope.Value + 1.0) * keyFrequency / 50.8 + (FrequencyCenter - 63) / 4.0;
                         break;
                     case 5:
                         if (oscillator.XM_Modulator != null)
                         {
-                            fc = kf / (12543.850 - 8.176) + (1 + oscillator.XM_Modulator.MakeWave()) * FrequencyCenter / 16.0;
+                            // Use any channel to create filter.
+                            fc = (1.0 - oscillator.XM_Modulator.MakeWave(Channel.LEFT, OscillatorUsage.MODULATION)) * oscillator.Get_XM_Sensitivity(oscillator) * keyFrequency / 6502.4 + (FrequencyCenter - 63) / 4.0;
                         }
                         else
                         {
-                            fc = kf / (12543.850 - 8.176) + FrequencyCenter / 16.0;
+                            fc = keyFrequency / 25.4 + (FrequencyCenter - 63) / 4.0;
                         }
                         break;
-                    //case 6:
-                    //    if (mainPage.Patch.Oscillators[polyId][Id].XM_Modulator != null)
-                    //    {
-                    //        q = q * mainPage.Patch.Oscillators[polyId][Id].XM_Modulator.MakeWave() / 128;
-                    //    }
-                    //    break;
                 }
-                //if (mainPage.Patch.Oscillators[0][Id].Adsr)
                 fftData[0] = new Complex(0, 0);
                 fftData[fftData.Length / 2] = new Complex(0, 0);
                 for (int i = 1; i < (fftData.Length / 2) - 1; i++)
                 {
-                    //if (mainPage.Patch.Oscillators[0][Id].AM_Modulator != null && 
-                    //    ((Rotator)mainPage.FilterGUIs[Id].SubControls.ControlsList[(int)FilterControls.FREQUENCY_CENTER]).Value.FilterFunction == (int)FilterFunction.AM_MODULATOR)
-                    //{
-                    //    fc = (uint)((1 - mainPage.Patch.Oscillators[0][Id].AM_Modulator.WaveData[i]) * (mainPage.WaveShape[this.Id].Gain / 128f) * (fftData.Length / 4) * ((float)key / 128f));
-                    //}
-                    //else if (mainPage.Patch.Oscillators[0][Id].FM_Modulator != null && mainPage.WaveShape[this.Id].FilterFunction == (int)FilterFunction.FM_MODULATOR)
-                    //{
-                    //    fc = (uint)(1 - mainPage.Patch.Oscillators[0][Id].FM_Modulator.WaveData[i]) * mainPage.WaveShape[this.Id].Gain;
-                    //}
-                    //else if (mainPage.Patch.Oscillators[0][Id].XM_Modulator != null && mainPage.WaveShape[this.Id].FilterFunction == (int)FilterFunction.XM_MODULATOR)
-                    //{
-                    //    fc = (uint)(1 - mainPage.Patch.Oscillators[0][Id].XM_Modulator.WaveData[i]) * mainPage.WaveShape[this.Id].Gain;
-                    //}
-                    y = 1 - (q * (i - fc) * (i - fc));
+                    //double adsrValue = adsrStart + adsrRamp * i / mainPage.SampleCount;
+                    y = 1 - (q * (i - fc/* * adsrValue*/) * (i - fc/* * adsrValue*/));
                     y = y < 0 ? 0 : y;
-                    //if (i > 0 && i < fftData.Length)
-                    {
-                        fftData[i] = new Complex(fftData[i].Real * y, fftData[i].Imaginary * y);
-                        fftData[fftData.Length - i - 1] = new Complex(fftData[fftData.Length - i - 1].Real * y, fftData[fftData.Length - i - 1].Imaginary * y);
-                        //if (i < fftData.Length / 4)
-                        //{
-                        //    fftData[i] *= (double)i / (double)(fftData.Length / 4);
-                        //    fftData[fftData.Length - i - 1] *= (double)i / (double)(fftData.Length / 4);
-                        //}
-                        //fftData[mainPage.SampleCount / 2 - i - 1] = 
-                        //    new Complex(fftData[mainPage.SampleCount / 2 - i - 1].Real * y, fftData[mainPage.SampleCount / 2 - i - 1].Imaginary * y);
-                    }
+                    fftData[i] = new Complex(fftData[i].Real * y, fftData[i].Imaginary * y);
+                    fftData[fftData.Length - i - 1] = new Complex(fftData[fftData.Length - i - 1].Real * y, fftData[fftData.Length - i - 1].Imaginary * y);
                 }
-
-                //for (int i = (int)(mainPage.SampleCount / 4); i < mainPage.SampleCount / 2; i++)
-                //{
-                //    fftData[i] = new Complex(0, 0);
-                //}
 
                 // Return to time domain:
-                try
-                {
-                    Fourier.Inverse(fftData, FourierOptions.AsymmetricScaling);
-                }
-                catch (Exception exception)
-                {
-                    //ContentDialog error = new Error("Unexpected error using FFT: " + exception.Message);
-                    //_ = error.ShowAsync();
-                }
+                Fourier.Inverse(fftData, FourierOptions.AsymmetricScaling);
 
                 for (int i = 0; i < fftData.Length; i++)
                 {

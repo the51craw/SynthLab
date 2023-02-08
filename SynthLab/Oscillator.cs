@@ -1,33 +1,21 @@
-﻿//using AudioEffectComponent;
-using MathNet.Numerics.IntegralTransforms;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
+//using System.Reflection.Metadata;
 using UwpControlsLibrary;
-using Windows.Foundation;
+using Windows.Services.Maps;
 using Windows.UI.Xaml.Controls;
-using System.ServiceModel;
+using Windows.UI.Xaml.Media;
 
 namespace SynthLab
 {
-    public enum ModulationType
-    {
-        PM,
-        FM,
-        DX,
-        NORMAL
-    }
-
+    #region mainPage
     public sealed partial class MainPage : Page
     {
         public OscillatorGUI[] oscillatorGUI;
     }
 
-    /// <summary>
     /// The frame server is the one recieving requests from the AudioGraph system.
     /// The reason for this frame server is that the AudioGraph system calls oscillators
     /// that are supposed to produce output sound at different times. Since Addition
@@ -42,9 +30,35 @@ namespace SynthLab
     /// It also has the reverb effects.
     /// Note that playing multiple keys constitutes playing different frequencies,
     /// and the buffer size is different fore each frequency. Ergo, we need one frame
-    /// server for each played key. Since the polyphony is Patch.Polyphony, we need Patch.Polyphony frame servers.
-    /// </summary>
+    /// server for each played key. Since the polyphony is 6, we need 6 frame servers.
 
+    /// <summary>
+    /// Sound is in stereo in order to allow implementation of chorus.
+    /// Samples are created in pairs, first one sample for left channel
+    /// then one sample for right channel. Methods that needs to use the
+    /// AngleLeft and AngleRight depends on Channel to decide on which to use.
+    /// </summary>
+    public enum Channel
+    {
+        LEFT,
+        RIGHT,
+    }
+
+    /// <summary>
+    /// Usage determines starting point and value range for a waveform.
+    /// If usage is OUTPUT the wave should start at 0 and have a range of -1 to +1.
+    /// If usage is MODULATION the wave should also start at 0 but have a range
+    /// of 0 to +1 in order to create proper modulation effects.
+    /// </summary>
+    public enum OscillatorUsage
+    {
+        OUTPUT,
+        MODULATION,
+        FM,
+        FM_PLUS_MINUS,
+    }
+    #endregion mainPage
+    #region oscillatorGui
     public class OscillatorGUI
     {
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +74,6 @@ namespace SynthLab
         public Rotator SelectorWave;
         public Rotator SelectorKeyboard;
         public Rotator SelectorModulation;
-        //public Rotator SelectorAdsrPulse;
         public Rotator SelectorView;
         public Indicator View;
         public Indicator Sounding;
@@ -69,6 +82,7 @@ namespace SynthLab
         //public Reverb Reverb;
         #endregion controlReferences
     }
+    #endregion oscillatorGui
 
     public partial class Oscillator
     {
@@ -84,23 +98,17 @@ namespace SynthLab
         public int  Id;
 
         /// <summary>
-        /// The oscillator has a waveshape object that is used to pre-create
-        /// the shape of a waveform thet the oscillator uses to crete a wave
-        /// form of expected frequency. This saves some time since the wave
-        /// shape does not always need to be re-created.
-        /// </summary>
-        public WaveShape WaveShape;
-
-        /// <summary>
         /// The oscillator has its own filter, but it is sometimes used from
         /// the WaveShape object.
         /// </summary>
         public Filter Filter;
 
         /// <summary>
-        /// The oscillator has its own ADSR and Pulse envelope generators.
+        /// The oscillator has its own ADSR envelope generator.
         /// </summary>
         public ADSR Adsr;
+
+        public OscillatorUsage Usage; 
 
         /// <summary>
         /// The oscillator has its own pitch envelope.
@@ -108,9 +116,17 @@ namespace SynthLab
         public PitchEnvelope PitchEnvelope;
 
         /// <summary>
+        /// The oscillator has a waveshape object that is used to pre-create
+        /// the shape of a waveform thet the oscillator uses to crete a wave
+            /// form of expected frequency. This saves some time since the wave
+        /// shape does not always need to be re-created.
+        /// </summary>
+        public WaveShape WaveShape;
+
+        /// <summary>
         /// Polyphonic Id, the first index of the oscillator.
         /// </summary>
-        public int PolyId;
+        //public int PolyId;
 
         /// <summary>
         /// Oscillators normally react on all MIDI channels, but can also be set
@@ -121,13 +137,17 @@ namespace SynthLab
         /// <summary>
         /// Oscillators normally does not have velocity sensitivity, but that can be activated.
         /// </summary>
-        public Boolean VelocitySensitive;
+        public byte Velocity;
+        public double ModulationVelocitySensitivity;
 
         /// <summary>
-        /// If VelocitySensitive is true, velocity affects the output volume of an oscillator
-        /// if it is an oscillator that creates output sound, i.e. not a modulator.
+        /// Velocity is used both for output volume and modulation output:
+        /// 0: Velocity is not used.
+        /// 1: Output volume is affected by velocity.
+        /// 2: Modulation output is affected by velocity.
+        /// 3: Output volume and modulation output is affected by velocity.
         /// </summary>
-        public byte Velocity;
+        public byte VelocitySensitive;
 
         /// <summary>
         /// Frequency and FineTune uses SetFrequency() to combine into FrequenceInUse,
@@ -170,6 +190,7 @@ namespace SynthLab
         /// The keyboard key pressed. Calls SetKeyboardAdjustedFrequency(key) to translate
         /// FrequencyInUse into KeyboardAdjustedFrequency when a key is pressed.
         /// </summary>
+        [JsonIgnore]
         public byte Key { get { return key; } set { key = value; SetKeyboardAdjustedFrequency(key); } }
 
         /// <summary>
@@ -178,15 +199,6 @@ namespace SynthLab
         /// to only modulate another oscillator (which it can do at the same time).
         /// </summary>
         public byte Volume;
-
-        /// <summary>
-        /// Returns true if volume is > 0 and MIDI channel is correct or -1, which means that oscillator listens to all channels.
-        /// </summary>
-        /// <returns></returns>
-        public Boolean IsOutput()
-        {
-            return Volume > 0;
-        }
 
         /// <summary>
         /// The waveform generated by the oscillator: SQARE, SAW_UP, SAW_DOWN, TRIANGLE, SINE, RANDOM or NOISE.
@@ -201,22 +213,32 @@ namespace SynthLab
         public Boolean Keyboard;
 
         /// <summary>
-        /// UseAdsr: true => use ADSR, false => use pulse
+        /// UseAdsr: true => use ADSR, false => play pulse
         /// </summary>
         public Boolean UseAdsr;
 
         /// <summary>
         /// Modulation sensitivity is how much a modulation source modulates an oscillator.
         /// </summary>
-        public float AM_Sensitivity;
+        public double AM_Sensitivity;
         /// <summary>
         /// Modulation sensitivity is how much a modulation source modulates an oscillator.
         /// </summary>
-        public float FM_Sensitivity;
+        public double FM_Sensitivity;
         /// <summary>
         /// Modulation sensitivity is how much a modulation source modulates an oscillator.
         /// </summary>
-        public float XM_Sensitivity;
+        public double XM_Sensitivity;
+
+        /// <summary>
+        /// Phase is used to alter high/low time ratio for square waves
+        /// and as a phase shift for other wave forms except random and noise.
+        /// </summary>
+        public double Phase;
+
+        public int ModulationKnobTarget;
+        public int ModulationWheelTarget;
+        public bool ViewMe;
 
         /// <summary>
         /// A modulator is an oscillator used to modulate another oscillator
@@ -240,12 +262,10 @@ namespace SynthLab
         public int XM_ModulatorId = -1;
 
         /// <summary>
-        /// Phase is used to alter high/low time ratio for square waves
-        /// and as a phase shift for other wave forms except random and noise.
+        /// A list containint all oscillators modulated by current (this) oscillator
         /// </summary>
-
         [JsonIgnore]
-        public double Phase;
+        public List<Oscillator> Modulating;
 
         /// <summary>
         /// The cyclic position, angle, within a waveform. Varies from zero to 2 PI.
@@ -253,8 +273,8 @@ namespace SynthLab
         /// </summary>
 
         [JsonIgnore]
-        public double Angle;
-        //public double WaveShapeAngle;
+        public double AngleLeft;
+        public double AngleRight;
 
         /// <summary>
         /// StepSize is used when generating a waveform. Each sample is depending on
@@ -262,20 +282,21 @@ namespace SynthLab
         /// a certain frequency. Used in GenerateAudioData and MakeGraphData to generate
         /// the waveform. Also altered when FM modulating with non-sine waveforms.
         /// </summary>
-
         [JsonIgnore]
         public double StepSize;
 
         /// <summary>
+        /// This is an offset from StepSize only used for FM modulation ()NOT DX style!)
+        /// in order to retain StepSize. Normally set to 0.
+        /// </summary>
+        [JsonIgnore]
+        public double StepSizeOffset;
+
+        /// <summary>
         /// Wave data for one frame to deliver.
         /// </summary>
-
         [JsonIgnore]
         public double[] WaveData;
-
-        public int ModulationKnobTarget;
-        public int ModulationWheelTarget;
-        public bool ViewMe;
 
         #endregion properties
 
@@ -308,10 +329,10 @@ namespace SynthLab
                 lfoFrequency = lfoFrequency < 0.01f ? 0.01f : lfoFrequency;
                 FrequencyInUse = lfoFrequency;
             }
-            if (mainPage != null && mainPage.FrameServer != null)
-            {
-                StepSize = FrequencyInUse * Math.PI * 2 / (float)mainPage.SampleRate;
-            }
+            //if (mainPage != null && mainPage.FrameServer != null)
+            //{
+            //    StepSize = FrequencyInUse * Math.PI * 2 / (double)mainPage.SampleRate;
+            //}
         }
 
         /// <summary>
@@ -334,14 +355,27 @@ namespace SynthLab
                 }
             }
         }
-        #endregion construction
+        #endregion propertyActions
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
         // Locals
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
         #region locals
 
-        //public uint SampleCount;
+        /// <summary>
+        /// This is a main switch used to let the oscillator run only when it should.
+        /// The AudioGraph and Frameinput node is always running, so oscillator
+        /// may create sound during initalizations, which is not prefered because
+        /// it makes short sound bursts before all initiation is done. Turn on last
+        /// at KeyOn and turn off first at ReleaseOscillator.
+        /// </summary>
+        [JsonIgnore]
+        public bool IsOn;
+        [JsonIgnore]
+        public bool KeyOn;
+        [JsonIgnore]
+        public bool KeyOff;
+
         private Random random = new Random();
 
         [JsonIgnore]
@@ -350,36 +384,79 @@ namespace SynthLab
         [JsonIgnore]
         public MainPage mainPage;
 
-        private double frequency = 440;
-        private double finetune = 0;
-        private double frequencyLfo = 5;
-        private double finetuneLfo = 0;
-        private ulong time = 0;
-        private byte key;
-        private double keyboardAdjustedFrequency;
-        private double finetunedFrequency;
-        private double lfoFrequency;
-        public Rotator selectorWave;
-        public Rotator selectorKeyboard;
-        public Rotator selectorModulation;
-        public Rotator selectorAdsrPulse;
-        private double am_PitchEnvlelopeSensitivity;
-        private double fm_PitchEnvlelopeSensitivity;
-        private double xm_PitchEnvlelopeSensitivity;
+        /// <summary>
+        /// When MIDI shannel is set to 'All' the oscillator still needs
+        /// to know where an incoming CC originates from in order to know
+        /// weather to react to an incoming Pitch Bender or not.
+        /// </summary>
+        [JsonIgnore]
+        private int incomingMidiChannel;
 
         [JsonIgnore]
-        public ModulationType ModulationType;
-        private bool justPassedTwoPi;
+        private double frequency;
+        [JsonIgnore]
+        private double finetune;
+        [JsonIgnore]
+        private double frequencyLfo;
+        [JsonIgnore]
+        private double finetuneLfo;
+        [JsonIgnore]
+        private byte key;
+        [JsonIgnore]
+        private double keyboardAdjustedFrequency;
+        [JsonIgnore]
+        private double finetunedFrequency;
+        [JsonIgnore]
+        private double lfoFrequency;
+        [JsonIgnore]
+        public Rotator selectorWave;
+        [JsonIgnore]
+        public Rotator selectorKeyboard;
+        [JsonIgnore]
+        public Rotator selectorModulation;
+        [JsonIgnore]
+        public Rotator selectorAdsrPulse;
+
+        [JsonIgnore]
         public Complex[] fftData;
-        private Boolean advance;
-        private double RandomValue;
-        private double lastEnd = 0;
+        [JsonIgnore]
+        public Boolean Advance;
 
-        double OriginalModulatorsPhase;
-        double OriginalModulatorsAngle;
-        double OriginalModulatorsStepSize;
+        /// <summary>
+        /// chorusOffset is the offset the left and right channel in
+        /// frequencies, by adding chorusOffset to the stepSize of
+        /// left channel, and subtracting corusPhase to the stepSize
+        /// of the rigth channel. chorusOffset is updated for each sample
+        /// in SetStepSize, but since SetStepSize is also called when
+        /// modulating a wave, there is a bool argument to only use
+        /// chorusOffset once.
+        /// </summary>
+        [JsonIgnore]
+        private double chorusOffset;
 
-        //public double previousAdsrPulseLevel;
+        /// <summary>
+        /// Forward is a switch for 'bouncing' chorus against maximum
+        /// frequency deviation. By simply adding/subtracting to/from
+        /// chorusOffset beween maximum frequency deviation up and
+        /// down, a triangle 'wave' of deviation is created.
+        /// </summary>
+        [JsonIgnore]
+        private bool Forward;
+
+        [JsonIgnore]
+        double adsrStart;
+        [JsonIgnore]
+        double adsrRamp;
+        [JsonIgnore]
+        public double randomValue;
+        [JsonIgnore]
+        private double lowSineWaveCompensation;
+
+        [JsonIgnore]
+        public bool NeedNewWaveShape;
+
+        [JsonIgnore]
+        public bool needsToGenerateWaveShape;
 
         /// <summary>
         /// Holds the sound generating. Use for short time only in order for oscillator to wait
@@ -398,39 +475,97 @@ namespace SynthLab
         {
         }
 
+        /// <summary>
+        /// Copy constructor
+        /// NOTE: Sub objects has to be created and added afterwards,
+        /// Filter, PitchEnvelope, ADSR and WaveShape.
+        /// </summary>
+        /// <param name="oscillator"></param>
+        public Oscillator(MainPage mainPage, Oscillator oscillator)
+        {
+            this.mainPage = mainPage;
+            Filter = new Filter();
+            Filter.FilterFunction = oscillator.Filter.FilterFunction;
+            //dispatcher = new KeyDispatcher(mainPage);
+            AM_Sensitivity = oscillator.AM_Sensitivity;
+            FM_Sensitivity = oscillator.FM_Sensitivity;
+            XM_Sensitivity = oscillator.XM_Sensitivity;
+            AM_ModulatorId = oscillator.AM_ModulatorId;
+            FM_ModulatorId = oscillator.FM_ModulatorId;
+            XM_ModulatorId = oscillator.XM_ModulatorId;
+            if (oscillator.Modulating == null)
+            {
+                Modulating = new List<Oscillator>();
+            }
+            else
+            {
+                Modulating = oscillator.Modulating;
+            }
+            FineTune = oscillator.FineTune;
+            FinetunedFrequency = oscillator.FinetunedFrequency;
+            Frequency = oscillator.Frequency;
+            FrequencyInUse = oscillator.FrequencyInUse;
+            FrequencyLfo = oscillator.FrequencyLfo;
+            FineTune = oscillator.FineTune;
+            FineTuneLfo = oscillator.FineTuneLfo;
+            Id = oscillator.Id;
+            KeyboardAdjustedFrequency = oscillator.KeyboardAdjustedFrequency;
+            Keyboard = oscillator.Keyboard;
+            LfoFrequency = oscillator.LfoFrequency;
+            MidiChannel = oscillator.MidiChannel;
+            ModulationKnobTarget = oscillator.ModulationKnobTarget;
+            ModulationVelocitySensitivity = oscillator.ModulationVelocitySensitivity;
+            ModulationWheelTarget = oscillator.ModulationWheelTarget;
+            UseAdsr = oscillator.UseAdsr;
+            VelocitySensitive = oscillator.VelocitySensitive;
+            Volume = oscillator.Volume;
+            WaveForm = oscillator.WaveForm;
+            Phase = oscillator.Phase;
+            StepSize = oscillator.StepSize;
+            StepSizeOffset = oscillator.StepSizeOffset;
+            AngleLeft = oscillator.AngleLeft;
+            AngleRight = oscillator.AngleRight;
+            lowSineWaveCompensation = 1;
+            KeyOff = false;
+            KeyOn = false;
+            //NeedNewWaveShape = true;
+        }
+
         public Oscillator(MainPage mainPage)
         {
             this.mainPage = mainPage;
-            WaveData = new double[mainPage.SampleCount];
+            //dispatcher = new KeyDispatcher(mainPage);
+            frequency = 440;
+            finetune = 0;
+            frequencyLfo = 5;
+            finetuneLfo = 0;
+            //WaveData = new double[mainPage.SampleCount * 2];
+            //NeedNewWaveShape = true;
+            WaveShape = new WaveShape(this);
+            Modulating = new List<Oscillator>();
         }
 
         public void Init(MainPage mainPage)
         {
             PitchEnvelope = new PitchEnvelope(mainPage, this);
-            WaveData = new double[mainPage.SampleCount];
-            Adsr = new ADSR(mainPage);
-            Adsr.Init(this);
+            //WaveData = new double[mainPage.SampleCount * 2];
+            Adsr = new ADSR(mainPage, this);
             Keyboard = true;
             frequency = 440;
             lfoFrequency = 5;
             FineTune = 0.0f;
             MidiChannel = 0;
-            VelocitySensitive = false;
+            VelocitySensitive = 0;
             Velocity = 0x40;
             Phase = Math.PI;
             AM_Sensitivity = 0;
             FM_Sensitivity = 0;
             XM_Sensitivity = 128;
-            am_PitchEnvlelopeSensitivity = 0;
-            fm_PitchEnvlelopeSensitivity = 0;
-            xm_PitchEnvlelopeSensitivity = 0;
             UseAdsr = true;
-            ModulationType = 0;
-            //previousAdsrPulseLevel = 0;
-            Filter = new Filter(mainPage, this);
-            WaveShape = new WaveShape();
-            WaveShape.Init();
-            WaveShape.PostCreationInit(mainPage, this);
+            Filter = new Filter(mainPage);
+            Filter.oscillator = this;
+            //NeedNewWaveShape = true;
+            WaveShape = new WaveShape(this);
         }
 
         #endregion construction
@@ -444,114 +579,45 @@ namespace SynthLab
         /// that in turn recursively initiates all connected modulators.
         /// </summary>
         /// <param name="key"></param>
-        public void InitOscillator(byte key, byte velocity)
+        public void InitOscillator(int channel, byte key, byte velocity)
         {
             Key = key;
-            Velocity = (byte)(VelocitySensitive ? velocity : 0x40);
+            KeyOff = false;
+            KeyOn = false;
+            incomingMidiChannel = channel;
+            StepSize = (1 + PitchEnvelope.Value * PitchEnvelope.PitchEnvPitch) * FrequencyInUse * Math.PI * 2 / mainPage.SampleRate;
+            StepSizeOffset = 0;
+            Velocity = (byte)(VelocitySensitive % 2 > 0 ? velocity : 64);
+            ModulationVelocitySensitivity = VelocitySensitive > 1 ? (double)velocity / 128.0 : 1;
             CurrentSample = 1;
-            time = 0;
-            InitModulators(this, key);
-            CheckModulationType();
-            WaveShape.MakeWave();
-            justPassedTwoPi = false;
-            if (WaveForm == WAVEFORM.SAW_DOWN || WaveForm == WAVEFORM.SAW_UP)
+            AngleLeft = 0;
+            AngleRight = 0;
+            adsrStart = UseAdsr ? 0 : 1;
+            PitchEnvelope.Value = 0;
+            if (AM_Modulator != null)
             {
-                Angle = Math.PI;
+                AM_Modulator.InitOscillator(channel, key, velocity);
             }
-            else
+            if (FM_Modulator != null)
             {
-                Angle = 0;
+                FM_Modulator.InitOscillator(channel, key, velocity);
             }
-            //WaveShapeAngle = 0;
-            RandomValue = (float)(random.Next(1000) - 500) / 500f;
-            if (Filter.FilterFunction > 0)
+            if (XM_Modulator != null)
             {
-                WaveShape.ApplyFilter(key);
+                XM_Modulator.InitOscillator(channel, key, velocity);
             }
         }
 
         public void CreateWaveData(uint requestedNumberOfSamples)
         {
-            WaveData = new double[requestedNumberOfSamples];
-        }
-
-        /// <summary>
-        /// Initializes all oscillators that are sourcing this one, using recursion.
-        /// Frequency is set either to the source's Lfo frequency or to the same frequency 
-        /// this oscillator has, depending on the source's keyboard/lfo switch.
-        /// Angle, currentSample and Amplitude are set to 0, 0 and 1 respectively.
-        /// Phase is calculated from the source's modulation sensitivity.
-        /// </summary>
-        /// <param name="oscillator" the oscillator whose sources are to be updated></param>
-        public void InitModulators(Oscillator oscillator, byte key)
-        {
-            if (oscillator.AM_Modulator != null)
-            {
-                oscillator.AM_Modulator.Key = key;
-                oscillator.AM_Modulator.SetKeyboardAdjustedFrequency(key);
-                oscillator.AM_Modulator.SetStepSize();
-                oscillator.AM_Modulator.CurrentSample = 1;
-                oscillator.AM_Modulator.Angle = 0;
-                //oscillator.AM_Modulator.WaveShapeAngle = 0;
-                oscillator.AM_Modulator.SetPhase();
-                oscillator.AM_Modulator.RandomValue = (random.Next(1000) - 500) / 500;
-                InitModulators(oscillator.AM_Modulator, key);
-            }
-            if (oscillator.FM_Modulator != null)
-            {
-                oscillator.FM_Modulator.Key = key;
-                oscillator.FM_Modulator.SetKeyboardAdjustedFrequency(key);
-                oscillator.FM_Modulator.SetStepSize();
-                oscillator.FM_Modulator.CurrentSample = 0;
-                oscillator.FM_Modulator.Angle = 0;
-                //oscillator.FM_Modulator.WaveShapeAngle = 0;
-                oscillator.FM_Modulator.SetPhase();
-                oscillator.FM_Modulator.RandomValue = (random.Next(1000) - 500) / 500;
-                InitModulators(oscillator.FM_Modulator, key);
-            }
-            if (oscillator.XM_Modulator != null)
-            {
-                oscillator.XM_Modulator.Key = key;
-                oscillator.XM_Modulator.SetFrequency();
-                oscillator.XM_Modulator.SetKeyboardAdjustedFrequency(key);
-                oscillator.XM_Modulator.SetStepSize();
-                oscillator.XM_Modulator.CurrentSample = 0;
-                oscillator.XM_Modulator.Angle = 0;
-                //oscillator.XM_Modulator.WaveShapeAngle = 0;
-                oscillator.XM_Modulator.SetPhase();
-                oscillator.XM_Modulator.RandomValue = (random.Next(1000) - 500) / 500;
-                InitModulators(oscillator.XM_Modulator, key);
-            }
-        }
-
-        private void CheckModulationType()
-        {
-            if (Keyboard && WaveForm == WAVEFORM.SINE
-                && XM_Modulator != null
-                && XM_Modulator.Keyboard && XM_Modulator.WaveForm == WAVEFORM.SINE)
-            {
-                ModulationType = ModulationType.DX;
-            }
-            else if (Keyboard && WaveForm == WAVEFORM.SQUARE
-                && XM_Modulator != null)
-            {
-                ModulationType = ModulationType.PM;
-            }
-            else
-            {
-                ModulationType = ModulationType.NORMAL;
-            }
+            WaveData = new double[requestedNumberOfSamples * 2];
         }
 
         public void SetStepSize()
         {
-            StepSize = (float)FrequencyInUse * Math.PI * 2 / mainPage.SampleRate;
+            StepSize = (double)FrequencyInUse * Math.PI * 2 / mainPage.SampleRate;
         }
 
-        public void SetPhase()
-        {
-            Phase = Math.PI * (Get_XM_Sensitivity() / 128.0f);
-        }
         #endregion reInitializations
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -565,207 +631,282 @@ namespace SynthLab
         /// </summary>
         /// <param name="requestedNumberOfSamples"></param>
         /// <returns></returns>
-        public void GenerateAudioData(uint requestedNumberOfSamples, float frequencyShift = 0, Boolean alsoMakeModulationData = false)
+        public void GenerateAudioData(uint requestedNumberOfSamples)
         {
-            //WaveData = new double[requestedNumberOfSamples];
-            double freq;
-            double pitchEnvelopeValue;
-
-            // Adjust frequency if Pitch envelope is active:
-            if (((Rotator)mainPage.PitchEnvelopeGUIs[mainPage.OscillatorToPitchEnvelope(Id)]
-                .SubControls.ControlsList[(int)PitchEnvelopeControls.MOD_PITCH]).Selection == 1)
+            //randomValue = 0;
+            if (WaveShape.WaveData == null)
             {
-                pitchEnvelopeValue = PitchEnvelope.Value;
-            }
-            else
-            {
-                pitchEnvelopeValue = 0;
+                WaveShape.WaveData = new double[requestedNumberOfSamples];
             }
 
-            freq = (1 + pitchEnvelopeValue) * FrequencyInUse;
-            StepSize = freq * Math.PI * 2 / mainPage.SampleRate;
-
-            if (AM_Modulator != null)
+            // Make one cycle of wave samples if needed:
+            //WaveShape.SetCanBeUsed(this);
+            if (needsToGenerateWaveShape)
             {
-                freq = (1 + AM_Modulator.PitchEnvelope.Value) * AM_Modulator.FrequencyInUse;
-                AM_Modulator.StepSize = freq * Math.PI * 2 / mainPage.SampleRate;
-
-                if (AM_Modulator.WaveForm == WAVEFORM.RANDOM)
+                WaveShape.MakeWave(requestedNumberOfSamples);
+                if (Filter.FilterFunction > 0)
                 {
-                    if (AM_Modulator.WaveData == null)
-                    {
-                        AM_Modulator.WaveData = new double[requestedNumberOfSamples];
-                    }
+                    Filter.PostCreationInit(requestedNumberOfSamples);
+                    WaveShape.WaveData = Filter.Apply(WaveShape.WaveData, key);
+                }
+                // This will turn off NeedsToBeCreated if the created WaveShape is not going
+                // need to be created every frame.
+                if (WaveShape.WaveShapeUsage == WaveShape.Usage.CREATE_ONCE)
+                {
+                    needsToGenerateWaveShape = false;
                 }
             }
 
-            if (FM_Modulator != null)
-            {
-                freq = (1 + FM_Modulator.PitchEnvelope.Value) * FM_Modulator.FrequencyInUse;
-                FM_Modulator.StepSize = freq * Math.PI * 2 / mainPage.SampleRate;
+            // We will modify and use the above paragraph when rules are formed.
+            //WaveShape.MakeWave(requestedNumberOfSamples);
 
-                if (FM_Modulator.WaveForm == WAVEFORM.RANDOM)
-                {
-                    if (FM_Modulator.WaveData == null)
-                    {
-                        FM_Modulator.WaveData = new double[requestedNumberOfSamples];
-                    }
-                }
+
+            PitchEnvelope.Advance();
+            AdvanceModulatorEnvelopes();
+            SetStepSize(this);
+            //StepSize = mainPage.PitchBend[MidiChannel] * (1 + PitchEnvelope.Value * PitchEnvelope.PitchEnvPitch) * FrequencyInUse * Math.PI * 2 / mainPage.SampleRate;
+
+            WaveData = new double[requestedNumberOfSamples * 2]; // Because here we produce stereo!
+            CalculateChorus();
+
+            if (WaveForm == WAVEFORM.SINE)
+            {
+                lowSineWaveCompensation = mainPage.EarCompensation.KeyToGain(key);
             }
 
-            if (XM_Modulator != null)
+            // At KeyOn the current (first) frame ramps up from 0 to Adsr.AdsrLevel.
+            // At KeyOff the current (last) frame ramps down from Adsr.AdsrLevel to 0.
+            // Frames in between ramps between previous value of Adsr.AdsrLevel to 
+            // current level of Adsr.AdsrLevel.
+            // If Adsr is set to Pulse, this works fine. AdsrLevel is set to 127 and
+            // AdsrState is set to AdsrStates.SUSTAIN at KeyOn, and Adsr is set to
+            // AdsrStates.RELEASE_END _after_ the last frame is generated.
+            adsrRamp = adsrStart / requestedNumberOfSamples;
+
+            // Generate requestedNumberOfSamples stereo samples:
+
+            // Temporary!
+            //WaveShape.ResetCanBeUsed();
+
+            for (int i = 0; i < requestedNumberOfSamples * 2; i++)
             {
-                freq = (1 + XM_Modulator.PitchEnvelope.Value) * XM_Modulator.FrequencyInUse;
-                XM_Modulator.StepSize = freq * Math.PI * 2 / mainPage.SampleRate;
-                XM_Modulator.WaveData = new double[mainPage.SampleCount];
-
-                if (XM_Modulator.WaveForm == WAVEFORM.RANDOM)
-                {
-                    if (XM_Modulator.WaveData == null)
-                    {
-                        XM_Modulator.WaveData = new double[requestedNumberOfSamples];
-                    }
-                }
-
-                // Phase of the WaveShape must be re-created and modulated:
-                WaveShape.Phase = Math.PI + XM_Sensitivity / 138.0 * XM_Modulator.MakeWave();
-                WaveShape.MakeWave();
-                mainPage.allowGuiUpdates = true;
-            }
-
-            // Re-filter the waveshape (if in use, is filtered and is controlled by Pitch envelope or ADSR):
-            if (WaveForm < WAVEFORM.RANDOM && ModulationType != ModulationType.DX && Filter.FilterFunction > 1)
-            {
-                WaveShape.ApplyFilter(key);
-            }
-
-            // Wait if WaveShape is generating data:
-            while (WaveShape.Buzy);
-
-            // Used only for Noise waves to have the same mean in all frames, i.e. zero:
-            double mean = 0;
-
-            for (int i = 0; i < mainPage.SampleCount; i++)
-            {
+                Channel channel = (Channel)(i % 2);
                 MarkModulators(this);
-                if (WaveForm == WAVEFORM.NOISE)
+
+                if (WaveShape.WaveShapeUsage != WaveShape.Usage.NONE)
                 {
-                    // Noise is not to be translated to a certain frequency!
-                    CurrentSample = 0.001 * (random.Next(1000) - 500);
-					mean += CurrentSample;
+                    CurrentSample = MakeModulatedWaveFromWaveShape(i, channel, requestedNumberOfSamples);
                 }
                 else if (WaveForm == WAVEFORM.RANDOM)
                 {
-                    CurrentSample = RandomValue;
+                    CurrentSample = randomValue;
                 }
-                else if (ModulationType == ModulationType.DX)
+                else if (XM_Modulator != null && WaveForm == WAVEFORM.SQUARE
+                        && XM_Modulator.Keyboard == false)
                 {
-                    try
-                    {
-                        // Yamaha DX style FM synthesis;
-                        CurrentSample = MakeDxWave(this);
-                    }
-                    catch (Exception exception)
-                    {
-                        ContentDialog error = new Error(exception.Message);
-                        _ = error.ShowAsync();
-                    }
+                    CurrentSample = MakeModulatedWave(channel, OscillatorUsage.OUTPUT);
+                }
+                else if (XM_Modulator != null && WaveForm == WAVEFORM.SINE
+                        && XM_Modulator.WaveForm == WAVEFORM.SINE && XM_Modulator.Keyboard == true)
+                {
+                    CurrentSample = MakeDXStyleWave(channel, OscillatorUsage.OUTPUT);
                 }
                 else
                 {
-                    try
-                    {
-                        // Use WaveShape.WaveData to create a waveform of current frequency:
-                        try
-                        {
-                            CurrentSample = WaveShape.WaveData[((int)(Angle * mainPage.SampleCount / Math.PI / 2)) % mainPage.SampleCount];
-                            if (WaveForm == WAVEFORM.SINE)
-                            {
-                                CurrentSample *= mainPage.EarCompensation.KeyToGain(key);
-                            }
-                        }
-                        catch (Exception exception)
-                        {
-                            ContentDialog error = new Error("Unexpected error using pre-made wave shape: " + exception.Message);
-                            _ = error.ShowAsync();
-                        }
-                    }
-                    catch (Exception exception)
-                    {
-                        ContentDialog error = new Error(exception.Message);
-                        _ = error.ShowAsync();
-                    }
+                    CurrentSample = MakeModulatedWave(channel, OscillatorUsage.OUTPUT);
+                }
+                AdvanceAngle(this, channel);
+                AdvanceModulatorsAngles(this, channel);
+
+                if (i % 2 == 0)
+                {
+                    adsrStart -= adsrRamp;
+                }
+                //if (WaveForm == WAVEFORM.RANDOM)
+                //{
+                //    CurrentSample = randomValue;
+                //}
+
+                if (WaveForm == WAVEFORM.SINE)
+                //if (lowSineWaveCompensation > 0)
+                {
+                    CurrentSample *= lowSineWaveCompensation;
                 }
                 CurrentSample *= Velocity / 127f;
-                if (Adsr.Pulse)
+                if (UseAdsr && !KeyOff)
                 {
-                    CurrentSample *= Adsr.AdsrPulseLevel;
+                    CurrentSample *= adsrStart;
                 }
-                else
-                {
-                    CurrentSample *= Adsr.AdsrLevel;
-                }
-                //if (UseAdsr)
-                //{
-                //    CurrentSample *= previousAdsrPulseLevel + (Adsr.AdsrLevel - previousAdsrPulseLevel) * (double)i / (double)mainPage.SampleCount;
-                //}
-                //else
-                //{
-                //    CurrentSample *= previousAdsrPulseLevel + (Adsr.Pulse.PulseLevel - previousAdsrPulseLevel) * (double)i / (double)mainPage.SampleCount;
-                //}
-                Modulate();
-                WaveData[i] = CurrentSample / 10;
-                WaveData[i] *= Volume / 128f;
-                WaveData[i] = WaveData[i] > 0.1 ? 0.1 : WaveData[i];
-                WaveData[i] = WaveData[i] < -0.1 ? -0.1 : WaveData[i];
-                AdvanceAngle(this);
-                AdvanceModulatorsAngles(this);
+                
+                CurrentSample *= Volume / 128f;
+                WaveData[i] = CurrentSample;
+                adsrStart = Adsr.AdsrLevel;
+            }
+            if (KeyOff)
+            {
+                mainPage.dispatcher[Id].ReleaseOscillator(key);
+            }
+            else
+            {
+                Adsr.Advance();
+                mainPage.allowGuiUpdates = true;
+            }
+        }
+
+        /// <summary>
+        /// CalculateChorus makes chorusOffset 'bounce' between a maximum
+        /// frequency deviation in a triangle wave fashion.
+        /// </summary>
+        private void CalculateChorus()
+        {
+            double speed = 0.0; // 1 -> 10 => 0.000001 -> 0.00001
+            double depth = 0.0;
+
+            switch (mainPage.Chorus.Selection)
+            {
+                case 0:
+                    chorusOffset = 0.0;
+                    break;
+                case 1:
+                    speed = mainPage.Settings.ChorusSpeed1 * 0.01;
+                    depth = mainPage.Settings.ChorusDepth1 * 0.00003;
+                    break;
+                case 2:
+                    speed = mainPage.Settings.ChorusSpeed2 * 0.01;
+                    depth = mainPage.Settings.ChorusDepth2 * 0.00003;
+                    break;
+                case 3:
+                    speed = mainPage.Settings.ChorusSpeed3 * 0.01;
+                    depth = mainPage.Settings.ChorusDepth3 * 0.00003;
+                    break;
             }
 
-            //previousAdsrPulseLevel = UseAdsr ? Adsr.AdsrLevel : Adsr.Pulse.PulseLevel;
-			//previousAdsrPulseLevel = Adsr.AdsrLevel;
-
-            if (WaveForm == WAVEFORM.NOISE && (mainPage.Patch.Layout < MainPage.Layouts.TWELVE_OSCILLATORS &&
-                ((Rotator)((CompoundControl)mainPage.FilterGUIs[Id]).SubControls.ControlsList[(int)FilterControls.FILTER_FUNCTION]).Selection > 0
-                || ((Rotator)((CompoundControl)mainPage.FilterGUIs[0]).SubControls.ControlsList[(int)FilterControls.FILTER_FUNCTION]).Selection > 0))
+            //speed = 0.000001;
+            if (Forward)
             {
-                if (mainPage.usingGraphicsCard)
+                chorusOffset += speed * depth;
+                if (chorusOffset > depth)
                 {
-                    //mainPage.Cuda_Filter(WaveData, 0, 0);
-                    //ApplyFilter();
+                    Forward = false;
                 }
-                else
+            }
+            else
+            {
+                chorusOffset -= speed * depth;
+                if (chorusOffset < -depth)
                 {
-                    //mean /= mainPage.SampleCount;
-                    //for (int i = 0; i < mainPage.SampleCount; i++)
-                    //{
-                    //    WaveData[i] -= mean;
-                    //}
-                    WaveData = Filter.Apply(WaveData, key);
-
-                    // Each frame's mean value differs after filtering, even it out:
-                    //mean = 0;
-                    //for (int i = 0; i < mainPage.SampleCount; i++)
-                    //{
-                    //    mean += WaveData[i];
-                    //}
-                    //mean /= mainPage.SampleCount;
-                    //for (int i = 0; i < mainPage.SampleCount; i++)
-                    //{
-                    //    WaveData[i] -= mean;
-                    //}
-
-                    // WaveData ends don't match after filtering since filter does not account for past nor future frames.
-                    // Even out the beginning and ramp down adjustmenst to zero in the procedure not to bias off uncontrolled:
-                    double diff = WaveData[0] - lastEnd;
-                    double stepDown = diff / mainPage.SampleCount;
-                    for (int i = 0; i < mainPage.SampleCount; i++)
-                    {
-                        WaveData[i] -= diff;
-                        diff -= stepDown;
-                    }
-                    lastEnd = WaveData[WaveData.Length - 1];
+                    Forward = true;
                 }
+            }
+        }
+
+
+        private void SetStepSize(Oscillator oscillator, bool chorus = true)
+        {
+            //if (chorus)
+            //{
+            //    switch (mainPage.Chorus.Selection)
+            //    {
+            //        case 0:
+            //            chorusOffset = 0;
+            //            break;
+            //        case 1:
+            //            if (Forward)
+            //            {
+            //                chorusOffset += 0.000001;// 0.0000015;
+            //                if (chorusOffset > 0.00006) //0.00005)
+            //                {
+            //                    Forward = false;
+            //                }
+            //            }
+            //            else
+            //            {
+            //                chorusOffset -= 0.0000015;
+            //                if (chorusOffset < -0.00005)
+            //                {
+            //                    Forward = true;
+            //                }
+            //            }
+            //            break;
+            //        case 2:
+            //            if (Forward)
+            //            {
+            //                chorusOffset += 0.000006;
+            //                if (chorusOffset > 0.00015)
+            //                {
+            //                    Forward = false;
+            //                }
+            //            }
+            //            else
+            //            {
+            //                chorusOffset -= 0.000006;
+            //                if (chorusOffset < -0.00015)
+            //                {
+            //                    Forward = true;
+            //                }
+            //            }
+            //            break;
+            //        case 3:
+            //            if (Forward)
+            //            {
+            //                chorusOffset += 0.000012;
+            //                if (chorusOffset > 0.00025)
+            //                {
+            //                    Forward = false;
+            //                }
+            //            }
+            //            else
+            //            {
+            //                chorusOffset -= 0.000012;
+            //                if (chorusOffset < -0.00025)
+            //                {
+            //                    Forward = true;
+            //                }
+            //            }
+            //            break;
+            //    }
+            //}
+            //else
+            //{
+            //    chorusOffset = 0;
+            //}
+
+            oscillator.StepSize = mainPage.PitchBend[incomingMidiChannel] * 
+                (1 + oscillator.PitchEnvelope.Value * oscillator.PitchEnvelope.PitchEnvPitch) * 
+                oscillator.FrequencyInUse * Math.PI * 2 / mainPage.SampleRate;
+            if (oscillator.AM_Modulator != null && oscillator.AM_Modulator.Keyboard)
+            {
+                SetStepSize(oscillator.AM_Modulator, false);
+            }
+            if (oscillator.FM_Modulator != null && oscillator.FM_Modulator.Keyboard)
+            {
+                SetStepSize(oscillator.FM_Modulator, false);
+            }
+            if (oscillator.XM_Modulator != null && oscillator.XM_Modulator.Keyboard)
+            {
+                SetStepSize(oscillator.XM_Modulator, false);
+            }
+        }
+
+        private void AdvanceModulatorEnvelopes()
+        {
+            if (AM_Modulator != null)
+            {
+                AM_Modulator.PitchEnvelope.Advance();
+                AM_Modulator.Adsr.Advance();
+                AM_Modulator.AdvanceModulatorEnvelopes();
+            }
+            if (FM_Modulator != null)
+            {
+                FM_Modulator.PitchEnvelope.Advance();
+                FM_Modulator.Adsr.Advance();
+                FM_Modulator.AdvanceModulatorEnvelopes();
+            }
+            if (XM_Modulator != null)
+            {
+                XM_Modulator.PitchEnvelope.Advance();
+                XM_Modulator.Adsr.Advance();
+                XM_Modulator.AdvanceModulatorEnvelopes();
             }
         }
 
@@ -774,33 +915,8 @@ namespace SynthLab
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
         // Basic wave generating functions
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
         #region basicWaveGenerating
-
-        /// <summary>
-        /// The basic sine FM equation:
-        /// y(t) = Amplitude * sin(2π * fc * t + I * sin(2π * fm * t)),
-        /// where the parameters are defined as follows:
-        /// fc = carrier frequency(Hz)
-        /// fm = modulation frequency(Hz)
-        /// I = modulation index
-        /// 2π * fc * t is pre-calculated into the Angle in calculations below.
-        /// I is the modulation sensitivity knob value (must be divided down).
-        /// The sin(2π* fm * t) part is recursively calling the function again
-        /// for any DX FM modulator until no more DX FM modulatiors are found.
-        /// </summary>
-        private double MakeDxWave(Oscillator oscillator)
-        {
-            if (oscillator.XM_Modulator != null && oscillator.XM_Modulator.WaveForm == WAVEFORM.SINE && oscillator.XM_Modulator.Keyboard)
-            {
-                return Math.Sin(oscillator.Angle
-                    + oscillator.XM_Sensitivity / 64f * MakeDxWave(oscillator.XM_Modulator));
-            }
-            else
-            {
-                return Math.Sin(oscillator.Angle);
-            }
-
-        }
 
         /// <summary>
         /// Moves the angle in Radians one StepSize forward. Backs up 2 * PI when
@@ -808,68 +924,109 @@ namespace SynthLab
         /// </summary>
         /// <param name="oscillator"></param>
         /// <returns>true if Radians backed up, else false (used when generating random waveform to detect when to generate a new sample</returns>
-        public void AdvanceAngle(Oscillator oscillator)
+        public void AdvanceAngle(Oscillator oscillator, Channel channel)
         {
-            //oscillator.WaveShapeAngle += oscillator.StepSize;
-            //while (oscillator.WaveShapeAngle > mainPage.SampleRate / 100)
+            double angle = channel == Channel.LEFT ? oscillator.AngleLeft : oscillator.AngleRight;
+            double offsetDirection = channel == Channel.LEFT ? +1 : -1;
+
+            //if (channel == Channel.LEFT)
             //{
-            //    oscillator.WaveShapeAngle -= mainPage.SampleRate / 100;
-            //}
-            oscillator.Angle += oscillator.StepSize;
-            while (oscillator.Angle > Math.PI * 2)
+            angle += oscillator.StepSize + oscillator.StepSizeOffset + chorusOffset * offsetDirection;
+            angle += oscillator.PitchEnvelope.Value * Get_FM_Sensitivity(this) / 20480 * Math.PI;
+            // + oscillator.Adsr.AdsrLevel;
+            while (angle > Math.PI * 2)
             {
-                oscillator.Angle -= Math.PI * 2;
-                oscillator.RandomValue = (random.Next(1000) - 500) / 500.0;
+                angle -= Math.PI * 2;
+                if (oscillator.WaveForm == WAVEFORM.RANDOM)
+                {
+                    oscillator.randomValue = random.NextDouble() * 2 - 1;
+                }
             }
+            while (angle < 0)
+            {
+                angle += Math.PI * 2;
+                if (oscillator.WaveForm == WAVEFORM.RANDOM)
+                {
+                    oscillator.randomValue = random.NextDouble() * 2 - 1;
+                }
+            }
+            if (channel == Channel.LEFT)
+            {
+                oscillator.AngleLeft = angle;
+            }
+            else
+            {
+                oscillator.AngleRight = angle;
+            }
+
+            //}
+            //else
+            //{
+            //    oscillator.AngleRight += oscillator.StepSize + oscillator.StepSizeOffset - chorusOffset;// + oscillator.PitchEnvelope.Value * PitchEnvelope.PitchEnvPitch;
+            //    while (oscillator.AngleRight > Math.PI * 2)
+            //    {
+            //        oscillator.AngleRight -= Math.PI * 2;
+            //    }
+            //    while (oscillator.AngleRight < 0)
+            //    {
+            //        oscillator.AngleRight += Math.PI * 2;
+            //    }
+            //}
+            //if (oscillator.WaveForm == WAVEFORM.NOISE)
+            //{
+            //    oscillator.RandomValue = (random.Next(1000) - 500) / 500.0;
+            //}
         }
 
-        public void AdvanceModulatorsAngles(Oscillator oscillator)
+        public void AdvanceModulatorsAngles(Oscillator oscillator, Channel channel)
         {
+            double angle = channel == Channel.LEFT ? oscillator.AngleLeft : oscillator.AngleRight;
+
             if (oscillator.AM_Modulator != null)
             {
-                AdvanceModulatorsAngles(oscillator.AM_Modulator);
-                if (oscillator.AM_Modulator.advance)
+                AdvanceModulatorsAngles(oscillator.AM_Modulator, channel);
+                if (oscillator.AM_Modulator.Advance)
                 {
-                    AdvanceAngle(oscillator.AM_Modulator);
-                    oscillator.AM_Modulator.advance = false;
+                    AdvanceAngle(oscillator.AM_Modulator, channel);
+                    oscillator.AM_Modulator.Advance = false;
                 }
             }
             if (oscillator.FM_Modulator != null)
             {
-                AdvanceModulatorsAngles(oscillator.FM_Modulator);
-                if (oscillator.FM_Modulator.advance)
+                AdvanceModulatorsAngles(oscillator.FM_Modulator, channel);
+                if (oscillator.FM_Modulator.Advance)
                 {
-                    oscillator.AdvanceAngle(oscillator.FM_Modulator);
-                    oscillator.FM_Modulator.advance = false;
+                    oscillator.AdvanceAngle(oscillator.FM_Modulator, channel);
+                    oscillator.FM_Modulator.Advance = false;
                 }
             }
             if (oscillator.XM_Modulator != null)
             {
-                AdvanceModulatorsAngles(oscillator.XM_Modulator);
-                if (oscillator.XM_Modulator.advance)
+                AdvanceModulatorsAngles(oscillator.XM_Modulator, channel);
+                if (oscillator.XM_Modulator.Advance)
                 {
-                    oscillator.AdvanceAngle(oscillator.XM_Modulator);
-                    oscillator.XM_Modulator.advance = false;
+                    oscillator.AdvanceAngle(oscillator.XM_Modulator, channel);
+                    oscillator.XM_Modulator.Advance = false;
                 }
             }
         }
 
-        private void MarkModulators(Oscillator oscillator)
+        public void MarkModulators(Oscillator oscillator)
         {
             if (oscillator.AM_Modulator != null)
             {
                 MarkModulators(oscillator.AM_Modulator);
-                oscillator.AM_Modulator.advance = true;
+                oscillator.AM_Modulator.Advance = true;
             }
             if (oscillator.FM_Modulator != null)
             {
                 MarkModulators(oscillator.FM_Modulator);
-                oscillator.FM_Modulator.advance = true;
+                oscillator.FM_Modulator.Advance = true;
             }
             if (oscillator.XM_Modulator != null)
             {
                 MarkModulators(oscillator.XM_Modulator);
-                oscillator.XM_Modulator.advance = true;
+                oscillator.XM_Modulator.Advance = true;
             }
         }
         #endregion basicWaveGenerating

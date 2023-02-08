@@ -1,0 +1,37 @@
+﻿WaveShape is used to pre-create one cycle of a periodic wave.
+It is used by the oscillator audio generating algorithm by streaching is into the preferred frequency, the frequency of the pressed key.
+A waveform that is complicated to create can be created just once, when an oscillator is re-initilized after pressing a key, and then 
+	re-used for all subsequent frames.
+However, if the shape of the wave is changing between frames, it has to be re-generated for each new frame, which increases the CPU load,
+	especially if filtering is involved.
+The oscillator can or have do without using WaveShape in some cases:
+	Generating noise.
+	Generating random.
+	Generating DX style Frequency Modulation synthesis.
+	Generating simple waveforms that is not filtered.
+WaveShape always does the filtering when filter is in use.
+
+Because of all above we have two conciderations when creating a frame:
+Do we need to use WaveFrame at all?
+If we do, can we re-use the same WaveFrame for all consecutive frames and just create the WaveShape once?
+
+There are three answers to that:
+No, we do not need it.
+Yes we need it but only needs to create it once.
+Yes we need it and need to re-create it for each frame.
+
+WaveShape responds with an enum for that:
+public enum Usage
+{
+	NONE,
+	CREATE_ONCE,
+	CREATE_ALWAYS,
+}
+
+The Oscillator keeps track of if or when to create a WaveShape, starting at re-initialization 
+	(which is called at key on).
+
+The desicions are made in WaveShape.
+WaveShape owns the filter.
+Each oscillator owns a WaveShape.
+

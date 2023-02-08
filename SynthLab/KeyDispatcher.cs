@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SynthLab
 {
     /**
      * Polyphony:
-     * Synthlab can play up to Patch.Polyphony tones at the same time, including tones in release!
+     * Synthlab can play up to 6 tones at the same time, including tones in release!
      * Prioritizer keeps track of which oscillators are available
      * for playing next key when multiple keys are pressed.
      * 
@@ -33,8 +28,8 @@ namespace SynthLab
     {
         public Boolean PedalHold { get { return pedalHold; } set { SetPedalHold(value); } }
         public int KeyPriority = 0;
+        //public int Polyphony = 6;
         private MainPage mainPage;
-        private int polyphony;
 
         /// <summary>
         /// Index = poly-number, values are the keys assinged to the polys/oscillators.
@@ -56,25 +51,40 @@ namespace SynthLab
 
         private Boolean pedalHold = false;
 
-        public KeyDispatcher(MainPage mainPage, int Polyphony)
+        public KeyDispatcher(MainPage mainPage)
         {
             this.mainPage = mainPage;
-            polyphony = Polyphony;
-            Key = new int[32];
-            IsPressed = new bool[Polyphony];
-            //IsPressed = new bool[16][];
-            //for (int ch = 0; ch < 16; ch++)
-            //{
-            //    IsPressed[ch] = new bool[Polyphony];
-            //}
-            //Channel = new int[polyphony];
+            Key = new int[6];
+            IsPressed = new bool[6];
             pedalHold = false;
             Clear();
-            KeyOrder = new int[polyphony];
-            for (int i = 0; i < polyphony; i++)
+            KeyOrder = new int[6];
+            for (int i = 0; i < 6; i++)
             {
                 KeyOrder[i] = -1;
             }
+        }
+
+        public bool AnyKeyInUse(MainPage mainPage)
+        {
+            int count = 0;
+            for (int poly = 0; poly < 6; poly++)
+            {
+                count += NumberOfOscillatorsInUse();
+            }
+            return count > 0;
+        }
+
+        public static bool AnyOscillatorInUse(MainPage mainPage)
+        {
+            for (int osc = 0; osc < 12; osc++)
+            {
+                if (mainPage.Oscillators[0][osc].IsOn)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void SetPedalHold(Boolean value)
@@ -82,14 +92,13 @@ namespace SynthLab
             pedalHold = value;
             if (!pedalHold)
             {
-                for (int poly = 0; poly < polyphony; poly++)
+                for (int poly = 0; poly < 6; poly++)
                 {
                     if (!IsPressed[poly])
                     {
-                        for (int osc = 0; osc < mainPage.Patch.OscillatorCount; osc++)
+                        for (int osc = 0; osc < 12; osc++)
                         {
-                            //!!!
-                            mainPage.KeyOff((byte)Key[poly], mainPage.Patch.Oscillators[poly][osc].MidiChannel);
+                            mainPage.KeyOff((byte)Key[poly], mainPage.Oscillators[poly][osc].MidiChannel);
                         }
                     }
                 }
@@ -105,27 +114,23 @@ namespace SynthLab
         /// <returns></returns>
         public int TryAssignPoly(int Key)
         {
-            //if (KeyIsPlaying(Key))
-            //{
-            //    return -1;
-            //}
-            if (NumberOfOscillatorsInUse() == polyphony)
+            if (NumberOfOscillatorsInUse() >= 6)
             {
                 if (KeyPriority > 0)
                 {
                     int freePoly = -1;
 
                     // All polys are taken. Find the oldest one:
-                    for (int i = 0; i < polyphony; i++)
+                    for (int i = 0; i < 6; i++)
                     {
                         if (KeyOrder[i] == 0)
                         {
                             // Mark it as the newest one:
-                            KeyOrder[i] = polyphony;
+                            KeyOrder[i] = 6;
                             // Remember which poly to use:
                             freePoly = i;
                         }
-                        // Re-number the order to still be 0 - polyphony - 1:
+                        // Re-number the order to still be 0 - 6 - 1:
                         KeyOrder[i]--;
                     }
 
@@ -148,13 +153,13 @@ namespace SynthLab
             else
             {
                 // Since not all polys are in use, there must be one free:
-                for (int poly = 0; poly < polyphony; poly++)
+                for (int poly = 0; poly < 6; poly++)
                 {
                     if (this.Key[poly] == -1)
                     {
                         // Find the KeyOrder that is newest and make this one newer:
                         int newest = -1;
-                        for (int i = 0; i < polyphony; i++)
+                        for (int i = 0; i < 6; i++)
                         {
                             if (KeyOrder[i] > newest)
                             {
@@ -164,7 +169,6 @@ namespace SynthLab
                         KeyOrder[poly] = newest + 1;
 
                         this.Key[poly] = Key;
-                        //this.Channel[poly] = Channel;
                         if (pedalHold)
                         {
                             // Remember that this key was pressed while pedal was down:
@@ -173,19 +177,13 @@ namespace SynthLab
                         return poly;
                     }
                 }
-                // This should never happen:
-                throw new Exception("Expected poly was not found!");
+                return -1;
             }
         }
 
-        //public int ChannelOfPoly(int poly)
-        //{
-        //    return Channel[poly];
-        //}
-
         public int TryGetPolyFromKey(int Key)
         {
-            for (int poly = 0; poly < polyphony; poly++)
+            for (int poly = 0; poly < 6; poly++)
             {
                 if (this.Key[poly] == Key)
                 {
@@ -202,19 +200,16 @@ namespace SynthLab
 
         public void ReleaseOscillator(int Key)
         {
-            for (int poly = 0; poly < polyphony; poly++)
+            for (int poly = 0; poly < 6; poly++)
             {
                 if (this.Key[poly] == Key)
                 {
-                    //ReleasePoly(poly);
                     KeyOrder[poly] = -1;
                     this.Key[poly] = -1;
-                    //this.Channel[poly] = -1;
                     if (pedalHold)
                     {
                         IsPressed[poly] = false;
                     }
-                    //Debug.WriteLine("Released key = " + Key.ToString() + " poly =  " + poly.ToString());
                 }
             }
         }
@@ -223,7 +218,6 @@ namespace SynthLab
         {
             KeyOrder[poly] = -1;
             Key[poly] = -1;
-            //this.Channel[poly] = -1;
             if (pedalHold)
             {
                 IsPressed[poly] = false;
@@ -233,7 +227,7 @@ namespace SynthLab
         public int RePress(int Key)
         {
             int foundPoly = -1;
-            for (int poly = 0; poly < polyphony; poly++)
+            for (int poly = 0; poly < 6; poly++)
             {
                 if (this.Key[poly] == Key)
                 {
@@ -242,34 +236,25 @@ namespace SynthLab
                 }
             }
 
-            //!!!if (foundPoly > -1)
-            //{
-            //    KeyOrder.Remove(foundPoly);
-            //    KeyOrder.Add(foundPoly);
-            //}
-
             return foundPoly;
         }
 
         public Boolean KeyIsPlaying(int Key)
         {
-            //Debug.Write("Check if key " + Key.ToString() + " is playing, ");
-            for (int poly = 0; poly < polyphony; poly++)
+            for (int poly = 0; poly < 6; poly++)
             {
                 if (this.Key[poly] == Key)
                 {
-                    //Debug.WriteLine("found poly = " + poly.ToString());
                     return true;
                 }
             }
-            //Debug.WriteLine("did not find it");
             return false;
         }
 
 
         public void Clear()
         {
-            for (int poly = 0; poly < polyphony; poly++)
+            for (int poly = 0; poly < 6; poly++)
             {
                 Key[poly] = -1;
                 IsPressed[poly] = false;
@@ -279,14 +264,11 @@ namespace SynthLab
         public int NumberOfOscillatorsInUse()
         {
             int count = 0;
-            //for (int ch = 0; ch < 16; ch++)
+            for (int poly = 0; poly < 6; poly++)
             {
-                for (int poly = 0; poly < polyphony; poly++)
+                if (Key[poly] > -1)
                 {
-                    if (Key[poly] > -1)
-                    {
-                        count++;
-                    }
+                    count++;
                 }
             }
             return count;

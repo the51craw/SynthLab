@@ -1,0 +1,53 @@
+﻿MIDI in event => 128 IMidiEvents buffer => MidiInTimer picks and calls MIDI in handler => Keyboard.KeyOn()
+Virtual keyboard also calls Keyboard.KeyOn()
+
+KeyOn asks Dispatcher =>
+	Key is already playing => tell ADSR to restart key.
+	else, gets free poly => start playing key.
+	else, no poly available, check setting to
+		stay dead
+		or stop and free oldest poly and use that.
+
+Start playing key =>
+	Loop all oscillators
+		If volume is on and MIDI channel is ok
+			Initiate oscillator
+			Initiate ADSR
+			Turn on FrameServer for the poly in use
+
+Frameserver QuantumStarted()
+	Clear a frame buffer
+	Loops all channels
+		Loops all polys
+			If poly is on for the channel
+				Calls the channel's Polyserver.GenerateAudioData() for its frame data
+				Adds all samples to own frame buffer
+	Delivers frame to AudioFrame system.
+
+Polyserver.GenerateAudioData()
+	Clear a frame buffer
+		Loops all oscillators in the poly
+			If oscillator has volume up and MIDI channel is the same or 'All'
+				Calls the oscillator to generate one frame to add to its frame data
+		Delivers frame to the calling FrameServer
+
+Oscillator.InitOscillator()
+	Called on successful KeyOn event
+		Initiates the oscillators in use for the pressed key.
+
+Oscillator.GenerateAudioData()
+	Initiates a WaveShape array containing 480 samples
+		with one full cycle of the current waveform while
+		recursively calls itself (InitOscillator) for any
+		modulators, in order to obtain a pre-modulated
+		frame of data.
+	If filter is active, applies filter to the WaveShape array,
+		taking any ADSR and modulation wheel changes into account.
+	Uses the WaveShape array to create a final frame that
+		is playing at the frequency given by the key, pitch
+		bender and pitch envelope.
+	Handles a ramp value from previous ADSR level to current 
+		ADSR level in order to correctly follow ADSR even though
+		the actual generating is much faster than the ADSR is
+		actually running.
+

@@ -11,15 +11,15 @@
     <AssemblyName>SynthLab</AssemblyName>
     <DefaultLanguage>en</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.19041.0</TargetPlatformVersion>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.22000.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-    <GenerateAppInstallerFile>True</GenerateAppInstallerFile>
-    <PackageCertificateThumbprint>195C46136158898AD6C416E4F7D101F4C83F8922</PackageCertificateThumbprint>
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    <PackageCertificateThumbprint>E11640656E0006B0AB66867EB1D978D98477F54B</PackageCertificateThumbprint>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
@@ -27,6 +27,9 @@
     <AppxBundlePlatforms>x64</AppxBundlePlatforms>
     <AppInstallerUri>F:\Users\hbe_000\Projects\Synthesizer\Installer</AppInstallerUri>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+    <PackageCertificateKeyFile>
+    </PackageCertificateKeyFile>
+    <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -112,7 +115,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <DefineConstants>NETFX_CORE;WINDOWS_UWP;CODE_ANALYSIS</DefineConstants>
     <Optimize>true</Optimize>
     <NoWarn>;2008</NoWarn>
     <DebugType>pdbonly</DebugType>
@@ -136,14 +139,14 @@
       <DependentUpon>AreYouSure.xaml</DependentUpon>
     </Compile>
     <Compile Include="AudioGraphCreation.cs" />
-    <Compile Include="ChannelSelector.xaml.cs">
-      <DependentUpon>ChannelSelector.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="ComputerKeyboard.cs" />
     <Compile Include="CreateControls.cs" />
+    <Compile Include="Drumset.cs" />
     <Compile Include="KeyDispatcher.cs" />
     <Compile Include="EarCompensation.cs" />
-    <Compile Include="Error.xaml.cs">
-      <DependentUpon>Error.xaml</DependentUpon>
+    <Compile Include="MakeModulatedWave.cs" />
+    <Compile Include="Message.xaml.cs">
+      <DependentUpon>Message.xaml</DependentUpon>
     </Compile>
     <Compile Include="FactoryPatches.xaml.cs">
       <DependentUpon>FactoryPatches.xaml</DependentUpon>
@@ -155,11 +158,14 @@
     <Compile Include="MidiSettings.xaml.cs">
       <DependentUpon>MidiSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Modulation.cs" />
     <Compile Include="OscillatorWaveforms.cs" />
+    <Compile Include="Question.xaml.cs">
+      <DependentUpon>Question.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Wave.cs" />
     <Compile Include="WaveShape.cs" />
     <Compile Include="FrameServer.cs" />
     <Compile Include="Functions.cs" />
@@ -174,7 +180,6 @@
     <Compile Include="Oscilloscope.cs" />
     <Compile Include="Patch.cs" />
     <Compile Include="PitchEnvelope.cs" />
-    <Compile Include="PolyServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tags.cs" />
     <Compile Include="Wiring.cs" />
@@ -230,17 +235,82 @@
     <Content Include="Assets\Wide310x150Logo.scale-125.png" />
     <Content Include="Assets\Wide310x150Logo.scale-150.png" />
     <Content Include="Assets\Wide310x150Logo.scale-400.png" />
+    <Content Include="Changes.txt" />
+    <Content Include="ExtraFiles\UwpControlsLibrary.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Flowchart.txt" />
     <Content Include="Generating sound.txt" />
+    <Content Include="Images\AdsrAmModOff.png" />
+    <Content Include="Images\AdsrAmModOn.png" />
     <Content Include="Images\AdsrBackground.png" />
+    <Content Include="Images\AdsrFmModOff.png" />
+    <Content Include="Images\AdsrFmModOn.png" />
     <Content Include="Images\AdsrGraphBackground.png" />
+    <Content Include="Images\AdsrXmModOff.png" />
+    <Content Include="Images\AdsrXmModOn.png" />
+    <Content Include="Images\BlackKeyDown.png" />
+    <Content Include="Images\Chorus1.png" />
+    <Content Include="Images\Chorus2.png" />
+    <Content Include="Images\Chorus3.png" />
+    <Content Include="Images\ChorusOff.png" />
+    <Content Include="Images\ChorusSetting1.png" />
+    <Content Include="Images\ChorusSetting2.png" />
+    <Content Include="Images\ChorusSetting3.png" />
+    <Content Include="Images\ChorusSpeedDepth.png" />
+    <Content Include="Images\ControlChangeMapping.png" />
     <Content Include="Images\DialogBackground.png" />
+    <Content Include="Images\DisplayFrame.png" />
+    <Content Include="Images\DisplayOff.png" />
+    <Content Include="Images\DisplayOn.png" />
+    <Content Include="Images\Factor1.png" />
+    <Content Include="Images\Factor2.png" />
+    <Content Include="Images\Factor3.png" />
+    <Content Include="Images\Factor4.png" />
+    <Content Include="Images\Factor5.png" />
+    <Content Include="Images\Factor6.png" />
+    <Content Include="Images\Factor7.png" />
+    <Content Include="Images\Factor8.png" />
+    <Content Include="Images\Filler.png" />
     <Content Include="Images\FilterPitchEnv.png" />
     <Content Include="Images\KeyPriorityReleaseFirst.png" />
     <Content Include="Images\KeyPriorityStayDead.png" />
+    <Content Include="Images\LedBlueOn.png" />
+    <Content Include="Images\LedRedOn.png" />
     <Content Include="Images\Manual2.png" />
-    <Content Include="Images\MidiSettingBackground.png" />
+    <Content Include="Images\MidiSettingBackground.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Images\MidiSettings2.png" />
     <Content Include="Images\MidiSettingsClickArea.png" />
+    <Content Include="Images\ModFMPlusMinus.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0.01ms.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0.02ms.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0.05ms.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton00.1ms.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton00.2ms.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton00.5ms.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0001ms.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0001mV.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0002ms.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0002mV.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0005ms.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0005mV.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0010ms.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0010mV.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0020ms.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0020mV.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0050ms.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0050mV.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0100ms.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0100mV.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0200ms.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0200mV.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0500ms.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton0500mV.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton1000ms.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButton1000mV.png" />
+    <Content Include="Images\Oscilloscope\OscilloscopeButtonAutomV.png" />
     <Content Include="Images\OscNumbers\1.png" />
     <Content Include="Images\OscNumbers\10.png" />
     <Content Include="Images\OscNumbers\11.png" />
@@ -274,10 +344,20 @@
     <Content Include="Images\Polyphony32.png" />
     <Content Include="Images\Polyphony6.png" />
     <Content Include="Images\Polyphony8.png" />
+    <Content Include="Images\ReverbOff.png" />
+    <Content Include="Images\ReverbOn.png" />
+    <Content Include="Images\ReverbWheelBackground.png" />
     <Content Include="Images\SaveAsToFile.png" />
+    <Content Include="Images\SelectDrumset.png" />
+    <Content Include="Images\SelectWaveFile.png" />
+    <Content Include="Images\Socket.png" />
     <Content Include="Images\TitleBackground.png" />
     <Content Include="Images\VelocityOff.png" />
     <Content Include="Images\VelocityOn.png" />
+    <Content Include="Images\VelocityToModulation.png" />
+    <Content Include="Images\VelocityToVolume.png" />
+    <Content Include="Images\VelocityToVolumeAndModulation.png" />
+    <Content Include="Images\WhiteKeyDown.png" />
     <Content Include="Images\Wires\AllSockets.png" />
     <Content Include="Images\Wires\AM0D1R.png" />
     <Content Include="Images\Wires\AM0D2R.png" />
@@ -422,7 +502,6 @@
     <Content Include="Images\Digit9.png" />
     <Content Include="Images\Digit9Dot.png" />
     <Content Include="Images\DisplayBackground.png" />
-    <Content Include="Images\Filler.png" />
     <Content Include="Images\FilterAdsrNegative.png" />
     <Content Include="Images\FilterAdsrPositive.png" />
     <Content Include="Images\FilterAmModulator.png" />
@@ -496,6 +575,7 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
     <Content Include="ReadMe.txt" />
+    <Content Include="WaveShape usage.txt" />
     <Content Include="ToDo.txt" />
     <Content Include="vc142.pdb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -510,11 +590,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="ChannelSelector.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Error.xaml">
+    <Page Include="Message.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -527,6 +603,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="MidiSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Question.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -552,37 +632,65 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Patches\50 Hz Humming sound.json">
+    <Content Include="Patches\60 Hz Humming.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Patches\CaveDrops.json">
+    <Content Include="Patches\Dual Synthesis.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Patches\Electric bass.json">
+    <Content Include="Patches\Filtered Square Wave.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Patches\MorseCode.json">
+    <Content Include="Patches\Fouriere Reversed.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Patches\MysteriousOrgan.json">
+    <Content Include="Patches\Morse codes S IDIDID.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Patches\R2D2.json">
+    <Content Include="Patches\Soft wah bass.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="Images\AdsrAmModOff.pdn" />
+    <None Include="Images\AdsrAmModOn.pdn" />
+    <None Include="Images\AdsrFmModOff.pdn" />
+    <None Include="Images\AdsrFmModOn.pdn" />
+    <None Include="Images\ChorusSpeedDepth.pdn" />
+    <None Include="Images\DigitalDisplayBackground.pdn" />
+    <None Include="Images\Factors.pdn" />
+    <None Include="Images\VelocityOff.pdn" />
+    <Content Include="Patches\Addtion synthesis.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Patches\Cathredal organ 1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Patches\Cathredal organ 2.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Patches\Cathredal organ 3.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Patches\Droplets in a cave.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Patches\Wind.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="Images\VelocityOff.pdn" />
-    <None Include="R2D2.json" />
+    <Content Include="Patches\JazzGroup.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Patches\R2D2.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="SynthLab_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UwpControlsLibrary, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>.\UwpControlsLibrary.dll</HintPath>
+      <HintPath>ExtraFiles\UwpControlsLibrary.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

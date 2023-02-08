@@ -131,7 +131,7 @@ namespace SynthLab
 
         public OscillatorsLayout(MainPage mainPage)
         {
-            switch (mainPage.Patch.Layout)
+            switch (mainPage.Layout)
             {
                 case MainPage.Layouts.FOUR_OSCILLATORS:
                     X = mainPage.MainLayout.x1;
@@ -212,7 +212,7 @@ namespace SynthLab
             filterFunctionY = 12;
             filterModWheelFunctionX = 207;
 
-            switch (mainPage.Patch.Layout)
+            switch (mainPage.Layout)
             {
                 case MainPage.Layouts.FOUR_OSCILLATORS:
                     X = mainPage.MainLayout.x2;
@@ -259,7 +259,7 @@ namespace SynthLab
 
         public AdsrLayout(MainPage mainPage)
         {
-            switch (mainPage.Patch.Layout)
+            switch (mainPage.Layout)
             {
                 case MainPage.Layouts.FOUR_OSCILLATORS:
                     X = mainPage.MainLayout.x4;
@@ -298,7 +298,7 @@ namespace SynthLab
 
         public DisplayLayout(MainPage mainPage)
         {
-            switch (mainPage.Patch.Layout)
+            switch (mainPage.Layout)
             {
                 case MainPage.Layouts.FOUR_OSCILLATORS:
                     X = mainPage.MainLayout.x4;
@@ -337,7 +337,7 @@ namespace SynthLab
 
         public ControlPanelLayout(MainPage mainPage)
         {
-            X = 138;
+            X = 104;
             Y = 13;
             X_Spacing = 0;
             Y_Spacing = 26;

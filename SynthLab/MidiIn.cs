@@ -12,10 +12,10 @@ namespace SynthLab
     class MidiIn
     {
         public MidiInPort MidiInPort;
-        public byte MidiInPortChannel;
         public List<DeviceInformation> MidiInDevices;
         public List<MidiInPort> portList;
         public List<string> portNames;
+        public List<UsedPort> usedPorts;
 
         private MainPage mainPage;
 
@@ -24,16 +24,8 @@ namespace SynthLab
             this.mainPage = mainPage;
             portList = new List<MidiInPort>();
             portNames = new List<string>();
+            usedPorts = new List<UsedPort>();
         }
-
-        //~MidiIn()
-        //{
-        //    foreach (MidiInPort port in portList)
-        //    {
-        //        MidiInPort.MessageReceived -= mainPage.MidiInPort_MessageReceivedAsync;
-        //    }
-        //    MidiInPort.Dispose();
-        //}
 
         public async Task<bool> Init()
         {
@@ -49,24 +41,37 @@ namespace SynthLab
                         MidiInPort = await MidiInPort.FromIdAsync(inDevice.Id);
                         if (MidiInPort == null)
                         {
-                            System.Diagnostics.Debug.WriteLine("Unable to create MidiInPort from input device");
+                            System.Diagnostics.Debug.WriteLine("Unable to create MidiInPort from input device " + inDevice.Name);
                         }
                         else
                         {
                             portList.Add(MidiInPort);
-                            MidiInPort.MessageReceived += mainPage.MidiInPort_MessageReceivedAsync;
+                            MidiInPort.MessageReceived += mainPage.MidiInPort_MessageReceived;
                             portNames.Add(inDevice.Name);
+                            usedPorts.Add(new UsedPort(inDevice.Id, true));
                         }
                     }
                 }
             }
             catch (Exception exception)
             {
-                ContentDialog error = new Error("Unexpected error using FFT: " + exception.Message);
+                ContentDialog error = new Message("Unexpected error: " + exception.Message);
                 _ = error.ShowAsync();
                 return false;
             }
             return true;
+        }
+    }
+
+    public class UsedPort
+    {
+        public string PortId;
+        public bool Use;
+
+        public UsedPort(string Id, bool Use)
+        {
+            PortId = Id;
+            this.Use = Use;
         }
     }
 }

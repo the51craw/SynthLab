@@ -1,10 +1,10 @@
-﻿using MathNet.Numerics.IntegralTransforms;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
-using System.Numerics;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.ServiceModel.Channels;
 using UwpControlsLibrary;
 using Windows.Foundation;
+using Windows.Media.Core;
 
 namespace SynthLab
 {
@@ -27,15 +27,14 @@ namespace SynthLab
 
     public class WaveShape
     {
+        public enum Usage
+        {
+            NONE,
+            CREATE_ONCE,
+            CREATE_ALWAYS,
+        }
+
         #region attributes
-
-        //public Filter Filter;
-
-        /// <summary>
-        /// Enabled allows for disabling the filter without changing any
-        /// settings, especially not setting FilterFunction to NONE.
-        /// </summary>
-        public Boolean Enabled;
 
         /// <summary>
         /// Filters internal float[SampleRate / 100] holding filtered data. This data is to be
@@ -43,12 +42,11 @@ namespace SynthLab
         /// with a frequency that defined the step length. 
         /// </summary>
 
+        public double Phase;
+        public double Angle;
+
         [JsonIgnore]
         public double[] WaveData;
-        [JsonIgnore]
-        public double[] OriginalWaveData;
-        [JsonIgnore]
-        public double Angle;
         [JsonIgnore]
         public bool Buzy;
 
@@ -56,52 +54,39 @@ namespace SynthLab
 
         #region locals
 
-        //private int filterFunction;
-        //private byte qSetting;
-        //private byte centerFrequency;
-        //private byte keyboardFollow = 63;
-        //private byte depth;
-        //private byte compensation;
-        //private int modulationSelector;
-        [JsonIgnore]
         private Random random = new Random();
-        private double timec = 0;
-        private double timem1 = 0;
-        private double timem2 = 0;
-        private double timem3 = 0;
-        //[JsonIgnore]
-        //public Complex[] fftData;
-        double q;
-        double y;
-        public WAVEFORM Waveform;
-        public double Phase;
-        private double angle;
-        [JsonIgnore]
-        public MainPage mainPage;
-        [JsonIgnore]
-        public Oscillator oscillator;
-        //private int id;
+        private MainPage mainPage;
+        private Oscillator oscillator;
         double stepSize;
-        //private int polyId;
+        public Usage WaveShapeUsage;
 
         #endregion locals
 
         #region contstruction
 
-        public void Init()
+        public WaveShape(Oscillator oscillator)
         {
-            Waveform = WAVEFORM.SQUARE;
+            this.oscillator = oscillator;
+            this.mainPage = oscillator.mainPage;
+            //WaveData = new double[requestedNumberOfSamples];
             Phase = Math.PI;
             Angle = 0;
             Buzy = false;
         }
 
-        public void PostCreationInit(MainPage mainPage, Oscillator oscillator)
+        [JsonConstructor]
+        public WaveShape(WaveShape waveShape)
+        {
+        }
+
+        public WaveShape(Oscillator oscillator, WaveShape waveShape)
         {
             this.oscillator = oscillator;
-            this.mainPage = mainPage;
-            WaveData = new double[mainPage.SampleCount];
-            OriginalWaveData = new double[mainPage.SampleCount];
+            mainPage = oscillator.mainPage;
+            //WaveData = new double[requestedNumberOfSamples];
+            Phase = waveShape.Phase;
+            Angle = waveShape.Angle;
+            Buzy = false;
         }
 
         #endregion construction
@@ -112,147 +97,28 @@ namespace SynthLab
         /// Makes a standard waveform.
         /// </summary>
         /// <param name="waveForm"></param>
-        public void MakeWave()
+        public void MakeWave(uint requestedNumberOfSamples)
         {
-            if (WaveData != null && WaveData.Length > 0)
+            WaveData = new double[requestedNumberOfSamples];
+            stepSize = Math.PI * 2 / requestedNumberOfSamples;
+            Angle = 0;
+            Phase = oscillator.Phase;
+            Buzy = true;
+            for (int i = 0; i < requestedNumberOfSamples; i++)
             {
-                stepSize = Math.PI * 2 / mainPage.SampleCount;
-                angle = 0;
-                Buzy = true;
-
-                for (int i = 0; i < mainPage.SampleCount; i++)
-                {
-                    WaveData[i] = OriginalWaveData[i] = MakeWaveSample(Waveform);
-                    AdvanceAngles();
-                }
-
-                Buzy = false;
+                oscillator.MarkModulators(oscillator);
+                WaveData[i] = MakeWaveSample(oscillator);
+                AdvanceAngle(requestedNumberOfSamples);
             }
+            Buzy = false;
         }
 
         #endregion wavecreation
-
-        #region filtering
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Filtering
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        public void ApplyFilter(int key)
-        {
-            for (int i = 0; i < mainPage.SampleCount; i++)
-            {
-                WaveData[i] = OriginalWaveData[i];
-            }
-            WaveData = oscillator.Filter.Apply(WaveData, key);
-            mainPage.allowGuiUpdates = true;
-        }
-
-        #endregion filtering
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Modulating
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////
-        #region modulating
-
-        /// <summary>
-        /// Frequency modulation is mainly intended for FM synthesis like the Yamaha DX
-        /// synthesizer series creates overtones. That syntesis uses only sine waves and
-        /// both waves are following the keyboard. However, since we have LFO variant and
-        /// five more waveforms there are a few variants supplied for making other effects
-        /// possible.
-        /// </summary>
-        /// <param name="oscillator" the current oscillator or a modulator that was attached to a modulator></param>
-        /// <returns>CurrentSample, modified or not modified by AM, FM, and/or PM</returns>
-        /// <affects>StepSize may be modified by FM when non-sine waveform is used as FM modulator</affects>
-        private double DX_Modulate(Oscillator oscillator)
-        {
-            double sample = 0;
-
-            if (oscillator.Keyboard && oscillator.WaveForm == WAVEFORM.SINE
-                && oscillator.FM_Modulator != null
-                && oscillator.FM_Modulator.Keyboard && oscillator.FM_Modulator.WaveForm == WAVEFORM.SINE
-                && oscillator.FM_Modulator.FM_Modulator != null
-                && oscillator.FM_Modulator.FM_Modulator.Keyboard && oscillator.FM_Modulator.FM_Modulator.WaveForm == WAVEFORM.SINE
-                && oscillator.FM_Modulator.FM_Modulator.FM_Modulator != null
-                && oscillator.FM_Modulator.FM_Modulator.FM_Modulator.Keyboard && oscillator.FM_Modulator.FM_Modulator.FM_Modulator.WaveForm == WAVEFORM.SINE)
-            {
-                // The basic FM equation:
-                // y(t) = Amplitude * sin(2π * fc * t + I1 * sin(2π * fm1 * t + I2 * sin(2π * fm2 * t + I3 * sin(2π * fm2 * t)))),
-                // where the parameters are defined as follows:
-                // fc = carrier frequency(Hz)
-                // fm = modulation frequency(Hz)
-                // I = modulation index
-
-                sample += (float)Math.Sin(Math.PI * 2 * (1 + oscillator.PitchEnvelope.Value)
-                        * oscillator.FrequencyInUse * (float)(timec / (float)oscillator.mainPage.SampleRate)
-                    + oscillator.FM_Sensitivity / 63f * Math.Sin(Math.PI * 2 * (1 + oscillator.FM_Modulator.PitchEnvelope.Value)
-                        * oscillator.FM_Modulator.FrequencyInUse * (float)(timec / (float)oscillator.mainPage.SampleRate)
-                    + oscillator.FM_Modulator.FM_Sensitivity / 63f * Math.Sin(Math.PI * 2 * (1 + oscillator.FM_Modulator.FM_Modulator.PitchEnvelope.Value)
-                        * oscillator.FM_Modulator.FM_Modulator.FrequencyInUse * (float)(timec / (float)oscillator.mainPage.SampleRate)
-                    + oscillator.FM_Modulator.FM_Modulator.FM_Sensitivity / 63f * Math.Sin(Math.PI * 2 * (1 + oscillator.FM_Modulator.FM_Modulator.FM_Modulator.PitchEnvelope.Value)
-                        * oscillator.FM_Modulator.FM_Modulator.FM_Modulator.FrequencyInUse * (float)(timec / (float)oscillator.mainPage.SampleRate)))));
-                sample = sample * 2 - 1;
-            }
-            else if (oscillator.Keyboard && oscillator.WaveForm == WAVEFORM.SINE
-                && oscillator.FM_Modulator != null
-                && oscillator.FM_Modulator.Keyboard && oscillator.FM_Modulator.WaveForm == WAVEFORM.SINE
-                && oscillator.FM_Modulator.FM_Modulator != null
-                && oscillator.FM_Modulator.FM_Modulator.Keyboard && oscillator.FM_Modulator.FM_Modulator.WaveForm == WAVEFORM.SINE)
-            {
-                // The basic FM equation:
-                // y(t) = Amplitude * sin(2π * fc * t + I1 * sin(2π * fm1 * t + I2 * sin(2π * fm2 * t))),
-                // where the parameters are defined as follows:
-                // fc = carrier frequency(Hz)
-                // fm = modulation frequency(Hz)
-                // I = modulation index
-
-                sample += (float)Math.Sin(Math.PI * 2 * (1 + oscillator.PitchEnvelope.Value)
-                        * oscillator.FrequencyInUse * (float)(timec / (float)oscillator.mainPage.SampleRate)
-                    + oscillator.FM_Sensitivity / 63f * Math.Sin(Math.PI * 2 * (1 + oscillator.FM_Modulator.PitchEnvelope.Value)
-                        * oscillator.FM_Modulator.FrequencyInUse * (float)(timec / (float)oscillator.mainPage.SampleRate)
-                    + oscillator.FM_Modulator.FM_Sensitivity / 63f * Math.Sin(Math.PI * 2 * (1 + oscillator.FM_Modulator.FM_Modulator.PitchEnvelope.Value)
-                        * oscillator.FM_Modulator.FM_Modulator.FrequencyInUse * (float)(timec / (float)oscillator.mainPage.SampleRate))));
-                sample = sample * 2 - 1;
-            }
-            else if (oscillator.Keyboard && oscillator.WaveForm == WAVEFORM.SINE
-                && oscillator.FM_Modulator != null
-                && oscillator.FM_Modulator.Keyboard && oscillator.FM_Modulator.WaveForm == WAVEFORM.SINE)
-            {
-                // The basic FM equation:
-                // y(t) = Amplitude * sin(2π * fc * t + I * sin(2π * fm * t)),
-                // where the parameters are defined as follows:
-                // fc = carrier frequency(Hz)
-                // fm = modulation frequency(Hz)
-                // I = modulation index
-
-                double anglec = Math.PI * 2 * (1 + oscillator.PitchEnvelope.Value) / oscillator.mainPage.SampleCount * timec;
-                double anglem1 = Math.PI * 2 * (1 + oscillator.PitchEnvelope.Value) / oscillator.mainPage.SampleCount * timem1;
-                double I1 = oscillator.FM_Sensitivity / 63f;
-                sample = (float)Math.Sin(anglec + I1 * Math.Sin(anglem1));
-            }
-
-            timec += 440 / oscillator.Frequency;
-            timem1 += 440 / oscillator.FM_Modulator.Frequency;
-            return sample;
-        }
-
-        #endregion modulating
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
         // Basic wave generating functions
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
         #region basicWaveGenerating
-
-        private void AdvanceAngles()
-        {
-            angle += stepSize;
-
-            if (angle > Math.PI * 2)
-            {
-                angle -= Math.PI * 2;
-            }
-        }
 
         /// <summary>
         /// Calls the proper wave generation algorithm, depending on oscillator's waveform
@@ -260,9 +126,9 @@ namespace SynthLab
         /// </summary>
         /// <param name="oscillator"></param>
         /// <returns></returns>
-        public double MakeWaveSample(WAVEFORM WaveForm)
+        public double MakeWaveSample(Oscillator oscillator)
         {
-            switch (WaveForm)
+            switch (oscillator.WaveForm)
             {
                 case WAVEFORM.SQUARE:
                     return MakeSquareWave();
@@ -273,9 +139,7 @@ namespace SynthLab
                 case WAVEFORM.TRIANGLE:
                     return MakeTriangleWave();
                 case WAVEFORM.SINE:
-                    return MakeSineWave();
-                case WAVEFORM.RANDOM:
-                    return MakeRandomWave();
+                    return MakeSineWave(oscillator);
                 case WAVEFORM.NOISE:
                     return MakeNoiseWave();
                 default:
@@ -284,13 +148,13 @@ namespace SynthLab
         }
 
         /// <summary>
-        /// Algorithm for generating a squarewave sample depending on the angle in Radians.
+        /// Algorithm for generating a squarewave sample depending on the Angle in Radians.
         /// </summary>
         /// <param name="oscillator"></param>
         /// <returns>One sample of wave data</returns>
         private float MakeSquareWave()
         {
-            if (angle > Phase)
+            if (Angle > Phase)
             {
                 return -1.0f;
             }
@@ -301,29 +165,29 @@ namespace SynthLab
         }
 
         /// <summary>
-        /// Algorithm for generating a sawtooth up wave sample depending on the angle in Radians.
+        /// Algorithm for generating a sawtooth up wave sample depending on the Angle in Radians.
         /// </summary>
         /// <param name="oscillator"></param>
         /// <returns>One sample of wave data</returns>
         private double MakeSawUpWave()
         {
-            double value = angle / Math.PI - 1.0f;
+            double value = Angle / Math.PI - 1.0f;
             return value;
         }
 
         /// <summary>
-        /// Algorithm for generating a sawtooth down wave sample depending on the angle in Radians.
+        /// Algorithm for generating a sawtooth down wave sample depending on the Angle in Radians.
         /// </summary>
         /// <param name="oscillator"></param>
         /// <returns>One sample of wave data</returns>
         private double MakeSawDownWave()
         {
-            double value = 1.0f - angle / Math.PI;
+            double value = 1.0f - Angle / Math.PI;
             return value;
         }
 
         /// <summary>
-        /// Algorithm for generating a triangle wave sample depending on the angle in Radians.
+        /// Algorithm for generating a triangle wave sample depending on the Angle in Radians.
         /// </summary>
         /// <param name="oscillator"></param>
         /// <returns>One sample of wave data</returns>
@@ -341,73 +205,55 @@ namespace SynthLab
 
             double sample = 0;
 
-            if (angle < Math.PI / 2)
+            if (Angle < Math.PI / 2)
             {
-                sample = 2 * angle / Math.PI;
+                sample = 2 * Angle / Math.PI;
             }
-            else if (angle < Math.PI)
+            else if (Angle < Math.PI)
             {
-                sample = 1 - 2 * (angle - Math.PI / 2) / Math.PI;
+                sample = 1 - 2 * (Angle - Math.PI / 2) / Math.PI;
             }
-            else if (angle < 3 * Math.PI / 2)
+            else if (Angle < 3 * Math.PI / 2)
             {
-                sample = 0f - 2 * (angle - Math.PI) / Math.PI;
+                sample = 0f - 2 * (Angle - Math.PI) / Math.PI;
             }
             else
             {
-                sample = 2 * (angle - 3 * Math.PI / 2) / Math.PI - 1;
+                sample = 2 * (Angle - 3 * Math.PI / 2) / Math.PI - 1;
             }
 
             return sample;
         }
 
         /// <summary>
-        /// Algorithm for generating a sine wave sample depending on the angle in Radians.
+        /// Algorithm for generating a sine wave sample depending on the Angle in Radians.
         /// </summary>
         /// <param name="oscillator"></param>
         /// <returns>One sample of wave data</returns>
-        private double MakeSineWave()
+        private double MakeSineWave(Oscillator oscillator)
         {
-            double sample = 0;
-            if (oscillator.ModulationType == ModulationType.NORMAL)
+            if (oscillator.XM_Modulator != null && oscillator.XM_Modulator.WaveForm == WAVEFORM.SINE && oscillator.XM_Modulator.Keyboard)
             {
-                sample = Math.Sin(angle);
+                return Math.Sin(Angle
+                    + oscillator.Get_XM_Sensitivity(oscillator) * oscillator.ModulationVelocitySensitivity / 64f * MakeSineWave(oscillator.XM_Modulator));
             }
-            if (oscillator.ModulationType == ModulationType.PM)
+            else
             {
-                if (oscillator.WaveForm == WAVEFORM.SQUARE && oscillator.XM_Modulator != null)
-                {
-                    oscillator.Phase = Math.PI * (1 - oscillator.XM_Sensitivity / 256 * (1 + (float)oscillator.XM_Modulator.WaveData
-                        [(int)(oscillator.XM_Modulator.Angle * oscillator.mainPage.SampleCount / Math.PI * 2) % oscillator.mainPage.SampleCount]
-                        ) / 2);
-                    sample = MakeWaveSample(0);
-                }
-                else
-                {
-                    sample = WaveData[(int)(angle * oscillator.mainPage.SampleCount / Math.PI * 2) % oscillator.mainPage.SampleCount];
-                }
-                sample = 0;
+                return Math.Sin(Angle);
             }
-            return sample ;
         }
-
-        /// <summary>
-        /// Algorithm for generating a random wave sample generated once per cycle.
-        /// </summary>
-        /// <param name="oscillator"></param>
-        /// <returns>One sample of wave data</returns>
-        float randomValue = 0.0f;
-        private float MakeRandomWave()
-        {
-            if (oscillator.Keyboard)
-            {
-                if (AdvanceAngle())
-                {
-                    randomValue = (random.Next(1000) - 500.0f) / 500f;
-                }
-            }
-            return randomValue;
-        }
+        //private double MakeSineWave(Oscillator oscillator)
+        //{
+        //    if (oscillator.XM_Modulator != null && oscillator.XM_Modulator.WaveForm == WAVEFORM.SINE && oscillator.XM_Modulator.Keyboard)
+        //    {
+        //        return Math.Sin(Angle
+        //            + oscillator.Get_XM_Sensitivity(oscillator) * oscillator.ModulationVelocitySensitivity / 64f * MakeSineWave(oscillator.XM_Modulator));
+        //    }
+        //    else
+        //    {
+        //        return Math.Sin(Angle);
+        //    }
+        //}
 
         /// <summary>
         /// Algorithm for generating a random wave sample for each step.
@@ -420,179 +266,541 @@ namespace SynthLab
         }
 
         /// <summary>
-        /// Moves the angle in Radians one StepSize forward. Backs up 2 * PI when
+        /// Moves the Angle in Radians one StepSize forward. Backs up 2 * PI when
         /// Radians exeeds 2 * PI. 
         /// </summary>
         /// <param name="oscillator"></param>
         /// <returns>true if Radians backed up, else false (used when generating random waveform to detect when to generate a new sample</returns>
-        private Boolean AdvanceAngle()
+        private Boolean AdvanceAngle(uint requestedNumberOfSamples)
         {
-            angle += Math.PI * 2 / (float)oscillator.mainPage.SampleCount;
-            if (angle < Math.PI * 2)
+            Angle += Math.PI * 2 / requestedNumberOfSamples;
+            if (Angle > Math.PI * 2)
             {
-                return false;
+                Angle -= Math.PI * 2;
             }
-            angle -= Math.PI * 2;
+            if (Angle < 0)
+            {
+                Angle += Math.PI * 2;
+            }
             return true;
         }
 
+        //private void AdvanceAngle(Oscillator oscillator, uint requestedNumberOfSamples)
+        //{
+        //    oscillator.AngleLeft += Math.PI * 2 / (float)requestedNumberOfSamples;
+        //    if (oscillator.AngleLeft > Math.PI * 2)
+        //    {
+        //        oscillator.AngleLeft -= Math.PI * 2;
+        //    }
+        //}
+
+        public void AdvanceModulatorsAngles(Oscillator oscillator)
+        {
+            if (oscillator.AM_Modulator != null)
+            {
+                AdvanceModulatorsAngles(oscillator.AM_Modulator);
+                if (oscillator.AM_Modulator.Advance)
+                {
+                    oscillator.AdvanceAngle(oscillator.AM_Modulator, Channel.LEFT);
+                    oscillator.AdvanceAngle(oscillator.AM_Modulator, Channel.RIGHT);
+                    oscillator.AM_Modulator.Advance = false;
+                }
+            }
+            if (oscillator.FM_Modulator != null)
+            {
+                AdvanceModulatorsAngles(oscillator.FM_Modulator);
+                if (oscillator.FM_Modulator.Advance)
+                {
+                    oscillator.AdvanceAngle(oscillator.FM_Modulator, Channel.LEFT);
+                    oscillator.AdvanceAngle(oscillator.FM_Modulator, Channel.RIGHT);
+                    oscillator.FM_Modulator.Advance = false;
+                }
+            }
+            if (oscillator.XM_Modulator != null)
+            {
+                //if (oscillator.WaveForm == WAVEFORM.SINE
+                //&& oscillator.XM_Modulator.WaveForm == WAVEFORM.SINE && oscillator.XM_Modulator.Keyboard == true)
+                //{
+                //    oscillator.AdvanceAngle(oscillator.XM_Modulator, true);
+                //    oscillator.AdvanceAngle(oscillator.XM_Modulator, false);
+                //}
+
+
+                AdvanceModulatorsAngles(oscillator.XM_Modulator);
+                if (oscillator.XM_Modulator.Advance
+                    || (oscillator.WaveForm == WAVEFORM.SINE 
+                    && oscillator.XM_Modulator.WaveForm == WAVEFORM.SINE 
+                    && oscillator.XM_Modulator.Keyboard == true))
+                {
+                    oscillator.AdvanceAngle(oscillator.XM_Modulator, Channel.LEFT);
+                    oscillator.AdvanceAngle(oscillator.XM_Modulator, Channel.RIGHT);
+                    oscillator.XM_Modulator.Advance = false;
+                }
+            }
+        }
+
+        //public void AdvanceFrequencyModulationSynthesisAngles(Oscillator oscillator, uint requestedNumberOfSamples)
+        //{
+        //    if (oscillator.XM_Modulator != null)
+        //    {
+        //        AdvanceModulatorsAngles(oscillator.XM_Modulator);
+        //    }
+        //    AdvanceAngle(requestedNumberOfSamples);
+        //    //oscillator.XM_Modulator.Advance = false;
+        //}
+
         #endregion basicWaveGenerating
+
+        public Usage SetWaveShapeUsage(Oscillator oscillator)
+        {
+            // Assume no usage:
+            WaveShapeUsage = Usage.NONE;
+
+            if (oscillator.WaveForm == WAVEFORM.NOISE && oscillator.Filter.FilterFunction > 0)
+            {
+                WaveShapeUsage =  Usage.CREATE_ALWAYS;
+            }
+            //if (oscillator.WaveForm == WAVEFORM.RANDOM)
+            //{
+            //    WaveShapeUsage =  Usage.CREATE_ALWAYS;
+            //}
+
+            //if (oscillator.WaveForm == WAVEFORM.SINE && oscillator.XM_Modulator != null
+            //        && oscillator.XM_Modulator.WaveForm == WAVEFORM.SINE && oscillator.XM_Modulator.Keyboard)
+            //{
+            //    if (AnyDXStyleModulationUsesOddFrequency(oscillator))
+            //    {
+            //        WaveShapeUsage =  Usage.CREATE_ALWAYS;
+            //    }
+            //    else
+            //    {
+            //        WaveShapeUsage =  Usage.NONE;
+            //    }
+            //}
+
+            if (oscillator.WaveForm == WAVEFORM.SINE && oscillator.XM_Modulator != null
+                    && oscillator.XM_Modulator.WaveForm == WAVEFORM.SINE && oscillator.XM_Modulator.Keyboard)
+            {
+                ((Rotator)mainPage.FilterGUIs[mainPage.OscillatorToFilter(oscillator.Id)].SubControls.
+                    ControlsList[(int)FilterControls.FILTER_FUNCTION]).Selection = 0;
+                oscillator.Filter.FilterFunction = 0;
+            }
+
+            if (oscillator.WaveForm != WAVEFORM.NOISE && oscillator.Filter.FilterFunction == 1)
+            {
+                WaveShapeUsage =  Usage.CREATE_ONCE;
+            }
+
+            if (oscillator.WaveForm != WAVEFORM.NOISE && oscillator.Filter.FilterFunction > 1)
+            {
+                WaveShapeUsage =  Usage.CREATE_ALWAYS;
+            }
+
+            //// (Note that LFO's does not use the filter, but the filter type selector can still be on.)
+            //if (oscillator.Keyboard && oscillator.Filter.FilterFunction > 1)
+            //{
+            //    WaveShapeUsage =  Usage.;
+            //}
+
+            // If a squarewave is beeing XM modulated:
+            if (oscillator.WaveForm == WAVEFORM.SQUARE && oscillator.XM_Modulator != null && oscillator.Filter.FilterFunction > 0)
+            {
+                WaveShapeUsage =  Usage.CREATE_ALWAYS;
+            }
+
+            //
+            //if ()
+            //{
+            //    this.needsToBeCreated = true;
+            //}
+            return WaveShapeUsage;
+        }
+
+        ///// <summary>
+        ///// When WaveShape is in use, there are situations when the WaveShape needs
+        ///// to be re-created between frames, such as when a filter is changing over
+        ///// time due to modulation from some source.
+        ///// </summary>
+        //public void ResetNeedsToBeCreated()
+        //{
+        //    SetNeedsToBeCreated(null, false);
+        //}
+
+        ///// <summary>
+        ///// When WaveShape is in use, there are situations when the WaveShape needs
+        ///// to be re-created between frames, such as when a filter is changing over
+        ///// time due to modulation from some source.
+        ///// </summary>
+        //public void SetNeedsToBeCreated()
+        //{
+        //    SetNeedsToBeCreated(null, true);
+        //}
+
+        ///// <summary>
+        ///// When WaveShape is in use, there are situations when the WaveShape needs
+        ///// to be re-created between frames, such as when a filter is changing over
+        ///// time due to modulation from some source.
+        ///// </summary>
+        //public void SetNeedsToBeCreated(Oscillator oscillator, bool needsToBeCreated = true)
+        //{
+        //    if (oscillator != null)
+        //    {
+        //        // Oscillator supplied:
+        //        this.NeedsToBeCreated = false;
+
+        //        // Waveforms that always change between frames:
+        //        if (oscillator.WaveForm == WAVEFORM.NOISE)
+        //        {
+        //            this.NeedsToBeCreated = true;
+        //        }
+        //        if (oscillator.WaveForm == WAVEFORM.RANDOM)
+        //        {
+        //            this.NeedsToBeCreated = true;
+        //        }
+
+        //        // DX style synthesis needs to be re-generated between frames only when
+        //        // modulator(s) do not use frequencies that are multiples of the base frequency:
+        //        if (oscillator.WaveForm == WAVEFORM.SINE && oscillator.XM_Modulator != null
+        //                && oscillator.XM_Modulator.WaveForm == WAVEFORM.SINE && oscillator.XM_Modulator.Keyboard)
+        //        {
+        //            this.NeedsToBeCreated = AnyDXStyleModulationUsesOddFrequency(oscillator);
+        //        }
+
+        //        // If the filter is changing over time, frames needs to be re-created between frames:
+        //        // (Note that LFO's does not use the filter, but the filter type selector can still be on.)
+        //        if (oscillator.Keyboard && oscillator.Filter.FilterFunction > 0)
+        //        {
+        //            this.NeedsToBeCreated = true;
+        //        }
+
+        //        // If a squarewave is beeing XM modulated:
+        //        if (oscillator.WaveForm == WAVEFORM.SQUARE && oscillator.XM_Modulator != null)
+        //        {
+        //            this.NeedsToBeCreated = true;
+        //        }
+
+        //        //
+        //        //if ()
+        //        //{
+        //        //    this.needsToBeCreated = true;
+        //        //}
+        //    }
+        //    else
+        //    {
+        //        // Default argument supplied:
+        //        this.NeedsToBeCreated = needsToBeCreated;
+        //    }
+        //}
+
+        ///// <summary>
+        ///// WaveShape needs to be used in order to speed up complex modulation situations but
+        ///// is also used for simple waveforms, thus enabling low-end computers to do simple synthesis.
+        ///// One frame containing exactly one period of the synthesized wave is then re-used for
+        ///// many subsequent frames.
+        ///// Note that the need to re-create WaveShape implies that it also needs to be used.
+        ///// Therefore SetNeedsToBeCreated() automatically sets SetNeedToBeUsed.
+        ///// </summary>
+        //public void SetCanBeUsed(bool canBeUsed)
+        //{
+        //    SetCanBeUsed(null, canBeUsed);
+        //}
+
+        ///// <summary>
+        ///// WaveShape needs to be used in order to speed up complex modulation situations but
+        ///// is also used for simple waveforms, thus enabling low-end computers to do simple synthesis.
+        ///// One frame containing exactly one period of the synthesized wave is then re-used for
+        ///// many subsequent frames.
+        ///// Note that the need to re-create WaveShape implies that it also needs to be used.
+        ///// Therefore SetNeedsToBeCreated() automatically sets SetNeedToBeUsed.
+        ///// </summary>
+        //public void SetCanBeUsed()
+        //{
+        //    SetCanBeUsed(null, true);
+        //}
+
+        ///// <summary>
+        ///// WaveShape needs to be used in order to speed up complex modulation situations but
+        ///// is also used for simple waveforms, thus enabling low-end computers to do simple synthesis.
+        ///// One frame containing exactly one period of the synthesized wave is then re-used for
+        ///// many subsequent frames.
+        ///// Note that the need to re-create WaveShape implies that it also needs to be used.
+        ///// Therefore SetNeedsToBeCreated() automatically sets SetNeedToBeUsed.
+        ///// </summary>
+        //public void ResetCanBeUsed()
+        //{
+        //    SetCanBeUsed(null, false);
+        //}
+
+        ///// <summary>
+        ///// Tests oscillator and all XM_Modulator objects in chain abov the oscillator
+        ///// for frequencies that could cause a need for re-generating WaveShape for each frame.
+        ///// </summary>
+        //public void SetCanBeUsed(Oscillator oscillator, bool canBeUsed = true)
+        //{
+        //    this.CanBeUsed = false;
+        //    if (oscillator != null)
+        //    {
+        //        if (oscillator.XM_Modulator != null)
+        //        {
+        //            if (IsMultippleFrequency(oscillator.FrequencyInUse, oscillator.XM_Modulator.FrequencyInUse))
+        //            {
+        //                CanBeUsed = false; //NoDXStyleModulationUsesOddFrequency(oscillator.XM_Modulator);
+        //            }
+        //            else
+        //            {
+        //                CanBeUsed = true;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            CanBeUsed = DescideNeed(oscillator);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        CanBeUsed = canBeUsed;
+        //    }
+
+        //    NeedsToBeCreated = CanBeUsed;
+        //    if (CanBeUsed)
+        //    {
+        //        ((Indicator)mainPage.OscillatorGUIs[oscillator.Id].SubControls.
+        //            ControlsList[(int)OscillatorControls.LEDSOUNDING]).IsOn = true;
+        //        ((Indicator)mainPage.OscillatorGUIs[oscillator.Id].SubControls.
+        //            ControlsList[(int)OscillatorControls.LEDSOUNDING_ADVANCED]).IsOn = false;
+        //    }
+        //    else
+        //    {
+        //        ((Indicator)mainPage.OscillatorGUIs[oscillator.Id].SubControls.
+        //            ControlsList[(int)OscillatorControls.LEDSOUNDING]).IsOn = true;
+        //        ((Indicator)mainPage.OscillatorGUIs[oscillator.Id].SubControls.
+        //            ControlsList[(int)OscillatorControls.LEDSOUNDING_ADVANCED]).IsOn = false;
+        //    }
+        //}
+
+        //private bool DescideNeed(Oscillator oscillator)
+        //{
+        //    // Assume need to use WaveShape:
+        //    bool result = true;
+        //    if (oscillator.WaveForm == WAVEFORM.NOISE)
+        //    {
+        //        result = false;
+        //    }
+        //    if (oscillator.WaveForm == WAVEFORM.RANDOM)
+        //    {
+        //        result = false;
+        //    }
+
+        //    if (oscillator.WaveForm == WAVEFORM.SINE && oscillator.XM_Modulator != null
+        //            && oscillator.XM_Modulator.WaveForm == WAVEFORM.SINE && oscillator.XM_Modulator.Keyboard)
+        //    {
+        //        result = AnyDXStyleModulationUsesOddFrequency(oscillator);
+        //    }
+			
+        //    if (oscillator.Filter.FilterFunction > 1)
+        //    {
+        //        result = false;
+        //    }
+			
+        //    // (Note that LFO's does not use the filter, but the filter type selector can still be on.)
+        //    if (oscillator.Keyboard && oscillator.Filter.FilterFunction > 1)
+        //    {
+        //        result = false;
+        //    }
+
+        //    // If a squarewave is beeing XM modulated:
+        //    if (oscillator.WaveForm == WAVEFORM.SQUARE && oscillator.XM_Modulator != null)
+        //    {
+        //        return false;
+        //    }
+
+        //    //
+        //    //if ()
+        //    //{
+        //    //    this.needsToBeCreated = true;
+        //    //}
+        //    return result;
+        //}
+
+        private bool AnyDXStyleModulationUsesOddFrequency(Oscillator oscillator)
+        {
+            if (oscillator.XM_Modulator != null)
+            {
+                if (!IsMultippleFrequency(oscillator.FrequencyInUse, oscillator.XM_Modulator.FrequencyInUse))
+                {
+                    return true;
+                }
+                else
+                {
+                    return AnyDXStyleModulationUsesOddFrequency(oscillator.XM_Modulator);
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private bool IsMultippleFrequency(double freqBase, double freq)
+        {
+            double multi = freq / freqBase;
+            multi -= Math.Truncate(multi);
+            return multi < 0.0001;
+        }
     }
 
     public partial class Oscillator
     {
 
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Oscillograph methods
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////
-        #region oscillograph
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //// Oscillograph methods
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //#region oscillograph
 
-        /// <summary>
-        /// Uses the wave-generating functions to produce two cycles of wave data
-        /// as an array of 200 integers to use by the oscilloscope as a 200 pixel wide graph.
-        /// </summary>
-        /// <param name="oscillator" the selected oscillator for which to show waveform></param>
-        /// <returns></returns>
-        public Point[] MakeGraphData(double height)
+        ///// <summary>
+        ///// Uses the wave-generating functions to produce two cycles of wave data
+        ///// as an array of 200 integers to use by the oscilloscope as a 200 pixel wide graph.
+        ///// </summary>
+        ///// <param name="oscillator" the selected oscillator for which to show waveform></param>
+        ///// <returns></returns>
+        //public Point[] MakeGraphData(double height)
+        //{
+        //    double OriginalPhase = Phase;
+        //    double OriginalAngle = Angle;
+        //    double OriginalStepSize = StepSize;
+        //    BackupOriginalModulators(this);
+        //    ResetModulators(this, FrequencyInUse);
+
+        //    double[] localBuffer = new double[200];
+        //    StepSize = Math.PI / 50;
+        //    Angle = 0;
+        //    Phase = 0;
+        //    int graphRandomValue = random.Next(20) - 10;
+
+        //    for (int i = 0; i < 200; i++)
+        //    {
+        //        MarkModulators(this);
+        //        //if (XM_Modulator != null)
+        //        ////if (ModulationType == ModulationType.DX)
+        //        //{
+        //        //    localBuffer[i] = 0;// HBE MakeDxWave(this);
+        //        //    //Modulate();
+        //        //    AdvanceAngle(this);
+        //        //    AdvanceModulatorsAngles(this);
+        //        //}
+        //        //else if (WaveForm == WAVEFORM.SINE)
+        //        //{
+        //        //    localBuffer[i] = MakeWave();
+        //        //    //Modulate();
+        //        //    AdvanceAngle(this);
+        //        //    AdvanceModulatorsAngles(this);
+        //        //}
+        //        //else if (WaveForm == WAVEFORM.RANDOM)
+        //        //{
+        //        //    if (i % 40 == 0)
+        //        //    {
+        //        //        graphRandomValue = random.Next(20) - 10;
+        //        //    }
+        //        //    localBuffer[i] = graphRandomValue;
+        //        //}
+        //        //else
+        //        {
+        //            localBuffer[i] = mainPage.Patch.Oscillators[0][Id].WaveShape.WaveData[(i * 4) % requestedNumberOfSamples];
+        //        }
+        //    }
+
+        //    Phase = OriginalPhase;
+        //    StepSize = OriginalStepSize;
+        //    Angle = OriginalAngle;
+        //    return NormalizeAmplitude(localBuffer, height);
+        //}
+
+        ///// <summary>
+        ///// Used by MakeGraphData to translate the float values generated 
+        ///// by the wave-generating functions into integers with an amplitude of 80 pixels.
+        ///// </summary>
+        ///// <param name="inBuffer"></param>
+        ///// <returns></returns>
+        //public Point[] NormalizeAmplitude(double[] inBuffer, double height)
+        //{
+        //    double factor = 0;
+        //    Point[] outBuffer = new Point[inBuffer.Length];
+        //    double max = 0;
+        //    double min = 0;
+        //    double offset = 0;
+
+        //    // Measure largest amplitude:
+        //    for (int i = 0; i < inBuffer.Length; i++)
+        //    {
+        //        if (inBuffer[i] > 0 && max < inBuffer[i])
+        //        {
+        //            max = inBuffer[i];
+        //        }
+        //        else if (inBuffer[i] < 0 && min > inBuffer[i])
+        //        {
+        //            min = inBuffer[i];
+        //        }
+        //    }
+        //    factor = max - min;
+        //    offset = (max + min) / 2;
+
+        //    // Convert to an amplitude of 80 peak-to-peak and invert signal:
+        //    for (int i = 0; i < inBuffer.Length; i++)
+        //    {
+        //        if (factor > 0)
+        //        {
+        //            // Graph hight = 92 px. Center is 66 so span is from 20 - 112
+        //            outBuffer[i] = new Point(i + 9, 1.5 * (44 + (offset - inBuffer[i]) * height / factor));
+        //        }
+        //        else
+        //        {
+        //            outBuffer[i] = new Point(i + 9, 66);
+        //        }
+        //    }
+
+        //    RestoreOriginalModulators(this);
+        //    return outBuffer;
+        //}
+
+        //private void BackupOriginalModulators(Oscillator oscillator)
+        //{
+        //    if (oscillator.XM_Modulator != null)
+        //    {
+        //        BackupOriginalModulators(oscillator.XM_Modulator);
+        //        OriginalModulatorsPhase = oscillator.XM_Modulator.Phase;
+        //        OriginalModulatorsAngle = oscillator.XM_Modulator.Angle;
+        //        OriginalModulatorsStepSize = oscillator.XM_Modulator.StepSize;
+        //    }
+        //}
+
+        //private void RestoreOriginalModulators(Oscillator oscillator)
+        //{
+        //    if (oscillator.XM_Modulator != null)
+        //    {
+        //        RestoreOriginalModulators(oscillator.XM_Modulator);
+        //        oscillator.XM_Modulator.Phase = OriginalModulatorsPhase;
+        //        oscillator.XM_Modulator.Angle = OriginalModulatorsAngle;
+        //        oscillator.XM_Modulator.StepSize = OriginalModulatorsStepSize;
+        //    }
+        //}
+
+        //private void ResetModulators(Oscillator oscillator, double frequency)
+        //{
+        //    if (oscillator.XM_Modulator != null)
+        //    {
+        //        ResetModulators(oscillator.XM_Modulator, frequency);
+        //        oscillator.XM_Modulator.Phase = 0;
+        //        oscillator.XM_Modulator.Angle = 0;
+        //        oscillator.XM_Modulator.StepSize = oscillator.XM_Modulator.FrequencyInUse / frequency * Math.PI / 50;
+        //    }
+        //}
+
+        //#endregion oscillograph
+        public Oscillator(List<Oscillator> value)
         {
-            // Must hold oscillator while borrowing it for generating oscillograph data
-            //while (mainPage.hold)
-            //{
-            //    Task.Delay(1);
-            //}
-            double OriginalPhase = Phase;
-            double OriginalAngle = Angle;
-            double OriginalStepSize = StepSize;
-            BackupOriginalModulators(this);
-            ResetModulators(this, FrequencyInUse);
-
-            double[] localBuffer = new double[200];
-            StepSize = Math.PI / 50;
-            Angle = 0;
-            Phase = 0;
-            CheckModulationType();
-            int graphRandomValue = random.Next(20) - 10;
-
-            for (int i = 0; i < 200; i++)
-            {
-                MarkModulators(this);
-                if (ModulationType == ModulationType.DX)
-                {
-                    localBuffer[i] = MakeDxWave(this);
-                    Modulate();
-                    AdvanceAngle(this);
-                    AdvanceModulatorsAngles(this);
-                }
-                else if (WaveForm == WAVEFORM.SINE)
-                {
-                    localBuffer[i] = MakeWave();
-                    Modulate();
-                    AdvanceAngle(this);
-                    AdvanceModulatorsAngles(this);
-                }
-                else if (WaveForm == WAVEFORM.RANDOM)
-                {
-                    if (i % 40 == 0)
-                    {
-                        graphRandomValue = random.Next(20) - 10;
-                    }
-                    localBuffer[i] = graphRandomValue;
-                }
-                else
-                {
-                    localBuffer[i] = mainPage.Patch.Oscillators[PolyId][Id].WaveShape.WaveData[(i * 4) % mainPage.SampleCount];
-                }
-                //Modulate();
-                //AdvanceAngle(this);
-                //AdvanceModulatorsAngles(this);
-            }
-
-            Phase = OriginalPhase;
-            StepSize = OriginalStepSize;
-            Angle = OriginalAngle;
-            return NormalizeAmplitude(localBuffer, height);
+            Value = value;
         }
 
-        /// <summary>
-        /// Used by MakeGraphData to translate the float values generated 
-        /// by the wave-generating functions into integers with an amplitude of 80 pixels.
-        /// </summary>
-        /// <param name="inBuffer"></param>
-        /// <returns></returns>
-        public Point[] NormalizeAmplitude(double[] inBuffer, double height)
-        {
-            double factor = 0;
-            Point[] outBuffer = new Point[inBuffer.Length];
-            double max = 0;
-            double min = 0;
-            double offset = 0;
-
-            // Measure largest amplitude:
-            for (int i = 0; i < inBuffer.Length; i++)
-            {
-                if (inBuffer[i] > 0 && max < inBuffer[i])
-                {
-                    max = inBuffer[i];
-                }
-                else if (inBuffer[i] < 0 && min > inBuffer[i])
-                {
-                    min = inBuffer[i];
-                }
-            }
-            factor = max - min;
-            offset = (max + min) / 2;
-
-            // Convert to an amplitude of 80 peak-to-peak and invert signal:
-            for (int i = 0; i < inBuffer.Length; i++)
-            {
-                if (factor > 0)
-                {
-                    // Graph hight = 92 px. Center is 66 so span is from 20 - 112
-                    outBuffer[i] = new Point(i + 9, 1.5 * (44 + (offset - inBuffer[i]) * height / factor));
-                }
-                else
-                {
-                    outBuffer[i] = new Point(i + 9, 66);
-                }
-            }
-
-            RestoreOriginalModulators(this);
-            return outBuffer;
-        }
-
-        private void BackupOriginalModulators(Oscillator oscillator)
-        {
-            if (oscillator.XM_Modulator != null)
-            {
-                BackupOriginalModulators(oscillator.XM_Modulator);
-                OriginalModulatorsPhase = oscillator.XM_Modulator.Phase;
-                OriginalModulatorsAngle = oscillator.XM_Modulator.Angle;
-                OriginalModulatorsStepSize = oscillator.XM_Modulator.StepSize;
-            }
-        }
-
-        private void RestoreOriginalModulators(Oscillator oscillator)
-        {
-            if (oscillator.XM_Modulator != null)
-            {
-                RestoreOriginalModulators(oscillator.XM_Modulator);
-                oscillator.XM_Modulator.Phase = OriginalModulatorsPhase;
-                oscillator.XM_Modulator.Angle = OriginalModulatorsAngle;
-                oscillator.XM_Modulator.StepSize = OriginalModulatorsStepSize;
-            }
-        }
-
-        private void ResetModulators(Oscillator oscillator, double frequency)
-        {
-            if (oscillator.XM_Modulator != null)
-            {
-                ResetModulators(oscillator.XM_Modulator, frequency);
-                oscillator.XM_Modulator.Phase = 0;
-                oscillator.XM_Modulator.Angle = 0;
-                oscillator.XM_Modulator.StepSize = oscillator.XM_Modulator.FrequencyInUse / frequency * Math.PI / 50;
-            }
-        }
-
-        #endregion oscillograph
+        public List<Oscillator> Value { get; }
     }
 }

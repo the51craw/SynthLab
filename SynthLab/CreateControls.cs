@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UwpControlsLibrary;
+﻿using UwpControlsLibrary;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
-using static SynthLab.Oscillator;
 
 namespace SynthLab
 {
@@ -38,6 +32,8 @@ namespace SynthLab
         ADSR_OR_PULSE,
         VIEW_ME,
         LEDSOUNDING,
+        LEDSOUNDING_LIGHT,
+        LEDSOUNDING_HEAVY,
         MODULATION_KNOB_TARGET,
         MODULATION_WHEEL_TARGET,
         AM_SOCKET,
@@ -81,6 +77,9 @@ namespace SynthLab
         ADSR_S,
         ADSR_R,
         ADSR_MODULATION_WHEEL_USE,
+        ADSR_AM_SENS,
+        ADSR_FM_SENS,
+        ADSR_XM_SENS,
         PEDAL_HOLD,
         GRAPH,
         NONE,
@@ -91,6 +90,9 @@ namespace SynthLab
         FREQUENCY,
         OSCILLOGRAPH,
         DIGITS,
+        MILLIVOLTS_PER_CM,
+        MILLISECONDS_PER_CM,
+        DISPLAY_ON_OFF,
     }
 
     public enum type
@@ -109,17 +111,21 @@ namespace SynthLab
         SAVE_AS_TO_FILE,
         LOAD_FROM_FILE,
         FACTORY_PATCHES,
+        CHORUS,
         LAYOUT,
+        REVERB,
         SETTINGS,
         MIDI_SETTINGS,
         MANUAL,
+        REVERB_VALUE,
         USING_GRAPHICS_CARD,
         NONE
     }
 
     public enum OtherControls
     {
-        MODULATION_WHEEL = 1,
+        PITCH_BENDER_WHEEL = 1,
+        MODULATION_WHEEL,
         DISPLAY,
         NONE
     }
@@ -133,6 +139,8 @@ namespace SynthLab
         SINE,
         RANDOM,
         NOISE,
+        WAVE,
+        DRUMSET,
         NONE,
     }
 
@@ -147,8 +155,6 @@ namespace SynthLab
 
     public sealed partial class MainPage : Page
     {
-        Brush color;
-
         int numberOfOscillatorControlEnums = 15;
 
         /// <summary>
@@ -342,7 +348,7 @@ namespace SynthLab
         /// </summary>
         private void SetupGrid()
         {
-            switch (Patch.Layout)
+            switch (Layout)
             {
                 case Layouts.FOUR_OSCILLATORS:
                     oscillatorCount = 4;
@@ -589,33 +595,6 @@ namespace SynthLab
             }
         }
 
-        //public void CreateFilters()
-        //{
-
-        //    Patch.Filter = new Filter[32][];
-        //    for (int poly = 0; poly < 32; poly++)
-        //    {
-        //        Patch.Filter[poly] = new Filter[12];
-        //        for (int osc = 0; osc < 12; osc++)
-        //        {
-        //            Patch.Filter[poly][osc] = new Filter(this, poly, osc, SampleCount);
-        //        }
-        //    }
-        //}
-
-        //public void CreateWaveShapes()
-        //{
-        //    WaveShape = new WaveShape[32][];
-        //    for (int poly = 0; poly < 32; poly++)
-        //    {
-        //        WaveShape[poly] = new WaveShape[12];
-        //        for (int osc = 0; osc < 12; osc++)
-        //        {
-        //            WaveShape[poly][osc] = new WaveShape(this, poly, osc);
-        //        }
-        //    }
-        //}
-
         /// <summary>
         /// Creates the fixed controls, Modulation wheel, keyboard, logotype, patch select buttons
         /// and the lower right corner buttons. These controls are created once and used during the
@@ -643,18 +622,15 @@ namespace SynthLab
             ControlPanel.AddRotator((int)ControlPanelControls.FACTORY_PATCHES, gridControlPanel,
                 new Image[] { imgFactoryPatches },
                 new Point(ControlPanelLayout.X, ControlPanelLayout.Y + ControlPanelLayout.Y_Spacing * 1));
+            Chorus = ControlPanel.AddRotator((int)ControlPanelControls.CHORUS, gridControlPanel,
+                new Image[] { imgChorusOff, imgChorus1, imgChorus2, imgChorus3 },
+                new Point(ControlPanelLayout.X + 150, ControlPanelLayout.Y + ControlPanelLayout.Y_Spacing * 1));
             ControlPanel.AddRotator((int)ControlPanelControls.LAYOUT, gridControlPanel,
                 new Image[] { imgLayout4, imgLayout6, imgLayout8, imgLayout12 },
                 new Point(ControlPanelLayout.X, ControlPanelLayout.Y + ControlPanelLayout.Y_Spacing * 2));
-            //ControlPanel.AddRotator((int)ControlPanelControls.MIDI_SETTINGS, gridControlPanel,
-            //    new Image[] { imgMidiSettings },
-            //    new Point(ControlPanelLayout.X, ControlPanelLayout.Y + ControlPanelLayout.Y_Spacing * 3));
-            //ControlPanel.AddRotator((int)ControlPanelControls.SETTINGS, gridControlPanel,
-            //    new Image[] { imgSettings },
-            //    new Point(ControlPanelLayout.X + imgMidiSettings.ActualWidth, ControlPanelLayout.Y + ControlPanelLayout.Y_Spacing * 3));
-            //ControlPanel.AddRotator((int)ControlPanelControls.MANUAL, gridControlPanel,
-            //    new Image[] { imgManual },
-            //    new Point(ControlPanelLayout.X + imgMidiSettings.ActualWidth + imgSettings.ActualWidth, ControlPanelLayout.Y + ControlPanelLayout.Y_Spacing * 3));
+            Reverb = ControlPanel.AddRotator((int)ControlPanelControls.REVERB, gridControlPanel,
+                new Image[] { imgReverbOff, imgReverbOn },
+                new Point(ControlPanelLayout.X + 234, ControlPanelLayout.Y + ControlPanelLayout.Y_Spacing * 2));
             ControlPanel.AddRotator((int)ControlPanelControls.SETTINGS, gridControlPanel,
                 new Image[] { imgSettings },
                 new Point(ControlPanelLayout.X, ControlPanelLayout.Y + ControlPanelLayout.Y_Spacing * 3));
@@ -664,31 +640,38 @@ namespace SynthLab
             ControlPanel.AddRotator((int)ControlPanelControls.MANUAL, gridControlPanel,
                 new Image[] { imgManual },
                 new Point(ControlPanelLayout.X, ControlPanelLayout.Y + ControlPanelLayout.Y_Spacing * 4));
-            //ControlPanel.AddRotator((int)ControlPanelControls.USING_GRAPHICS_CARD, gridControlPanel,
-            //    new Image[] { imgUsingGraphicsCardOff, imgUsingGraphicsCardOn },
-            //    new Point(ControlPanelLayout.X, ControlPanelLayout.Y + ControlPanelLayout.Y_Spacing * 4));
-            //if (usingGraphicsCard)
-            //{
-            //    ((Rotator)ControlPanel.SubControls.ControlsList[(int)ControlPanelControls.USING_GRAPHICS_CARD]).Selection = 1;
-            //}
-            ControlPanel.AddStaticImage(0, gridControlPanel, new Image[] { imgLogotype }, new Point(30, 11));
+            ReverbSlider = ControlPanel.AddVerticalSlider((int)ControlPanelControls.REVERB_VALUE, gridControlPanel,
+                new Image[] { imgReverbWheelBackground, imgReverbWheelHandle },
+                new Rect(new Point(ControlPanelLayout.X + 316, ControlPanelLayout.Y),
+                    new Size(imgReverbWheelBackground.ActualWidth, imgReverbWheelBackground.ActualHeight)),
+                false, 0, 40);
+            ControlPanel.AddStaticImage(0, gridControlPanel, new Image[] { imgLogotype }, new Point(13, 11));
+            numberOfFixedControls++;
+
+            // Pitch bender wheel:
+            VerticalSlider temp = Controls.AddVerticalSlider((int)OtherControls.PITCH_BENDER_WHEEL, gridControlPanel,
+                new Image[] { imgModulatorWheelBackground, imgModulatorWheelHandle }, 
+                new Rect(gridStartX + gridSpacingX - 5, gridStartY + gridSpacingY * 4, 43, 157), false, 0, 16383);
+            temp.Value = 8192;
             numberOfFixedControls++;
 
             // Modulator wheel:
             Controls.AddVerticalSlider((int)OtherControls.MODULATION_WHEEL, gridControlPanel,
-                new Image[] { imgModulatorWheelBackground, imgModulatorWheelHandle }, new Rect(gridStartX + gridSpacingX - 6, gridStartY + gridSpacingY * 4, 43, 157), false, 0, 127);
+                new Image[] { imgModulatorWheelBackground, imgModulatorWheelHandle }, 
+                new Rect(gridStartX + gridSpacingX + 32, gridStartY + gridSpacingY * 4, 43, 157), false, 0, 127);
             numberOfFixedControls++;
 
             // Keyboard:
-            Keyboard keyboard = Controls.AddKeyBoard(Controls.ControlsList.Count, gridMain,
-                imgWhiteKey, imgBlackKey, new Point(gridStartX + gridSpacingX + 44, gridStartY + gridSpacingY * 4), 36, 84);
+            keyboard = Controls.AddKeyBoard(Controls.ControlsList.Count, gridKeyboard,
+                new Image[] { imgWhiteKey, imgBlackKey, imgWhiteKeyDown, imgBlackKeyDown }, 
+                new Point(gridStartX + gridSpacingX + 74, gridStartY + gridSpacingY * 4), 36, 84);
             foreach (Octave octave in keyboard.Octaves)
             {
                 foreach (Key key in octave.Keys)
                 {
-                    key.Image.PointerMoved += Keyboard_PointerMoved;
-                    key.Image.PointerPressed += Keyboard_PointerPressed;
-                    key.Image.PointerReleased += Keyboard_PointerReleased;
+                    key.Images[key.Images.Length - 1].PointerMoved += Keyboard_PointerMoved;
+                    key.Images[key.Images.Length - 1].PointerPressed += Keyboard_PointerPressed;
+                    key.Images[key.Images.Length - 1].PointerReleased += Keyboard_PointerReleased;
                 }
             }
         }
@@ -717,6 +700,12 @@ namespace SynthLab
             int displayDigitsBackgroundY = 13;
             int displayDigitsX = 4;
             int displayDigitsY = 60;
+            int displaymVX = 15;
+            int displaymVY = 15;
+            int displaymsX = 15;
+            int displaymsY = 116;
+            int displayOnOffX = 203;
+            int displayOnOffY = 116;
             int displayOscilloscopeBackgroundX = 238;
             int displayOscilloscopeBackgroundY = 13;
 
@@ -761,10 +750,6 @@ namespace SynthLab
             int knobAdsrX = 47;
             int knobAdsrY = 132;
             int knobAdsrSpacingX = 81;
-            int buttonAdsrX = 333;
-            int buttonAdsrY = 12;
-            int buttonAdsrSpacingY = 31;
-            int modButtonAdsrX = 10;
 
             // Display:
             Rect hitArea =
@@ -774,7 +759,7 @@ namespace SynthLab
                     imgDisplayBackground.ActualWidth, imgDisplayBackground.ActualHeight), imgClickArea,
                 (int)OtherControls.DISPLAY, (int)type.DISPLAY, gridControls, new Image[] { imgDisplayBackground },
                 hitArea);
-            DisplayGUI.AddGraph((int)DisplayControls.FREQUENCY, gridControls, new Image[] { imgGraphDisplayBackground },
+            DisplayGUI.AddGraph((int)DisplayControls.FREQUENCY, gridControls, new Image[] { imgDigitalBackground },
                 new Point(displayDigitsBackgroundX, displayDigitsBackgroundY), new SolidColorBrush(Windows.UI.Colors.Chartreuse));
             DisplayGUI.AddGraph((int)DisplayControls.OSCILLOGRAPH, gridControls, new Image[] { imgGraphDisplayBackground },
                 new Point(displayOscilloscopeBackgroundX, displayOscilloscopeBackgroundY), new SolidColorBrush(Windows.UI.Colors.Chartreuse));
@@ -783,9 +768,28 @@ namespace SynthLab
                             img1Dot, img2Dot, img3Dot, img4Dot, img5Dot, img6Dot, img7Dot, img8Dot, img9Dot },
                 new Point(displayDigitsX, displayDigitsY), 7, 2);
             ((DigitalDisplay)DisplayGUI.SubControls.ControlsList[(int)DisplayControls.DIGITS]).DisplayValue(440);
-            oscilloscope = new Oscilloscope(this);
             oscilloscope.oscilloskopOffset = new Point(gridStartX + displayOscilloscopeBackgroundX,
                 gridStartY + displayOscilloscopeBackgroundY + gridSpacingY * 4);
+            Rotator temp = DisplayGUI.AddRotator((int)DisplayControls.MILLIVOLTS_PER_CM, gridControls,
+                new Image[] { imgOscilloScopeButtonAutomV,imgOscilloScopeButton0001mV, imgOscilloScopeButton0002mV,
+                    imgOscilloScopeButton0005mV, imgOscilloScopeButton0010mV, imgOscilloScopeButton0020mV,
+                    imgOscilloScopeButton0050mV, imgOscilloScopeButton0100mV, imgOscilloScopeButton0200mV,
+                    imgOscilloScopeButton0500mV, imgOscilloScopeButton1000mV },
+                new Point(displaymVX, displaymVY));
+            temp.Selection = GetIndexFromVoltPerCm(oscilloscope.VoltsPerCm);
+            temp = DisplayGUI.AddRotator((int)DisplayControls.MILLISECONDS_PER_CM, gridControls,
+                new Image[] { imgOscilloScopeButton0010us, imgOscilloScopeButton0020us, imgOscilloScopeButton0050us,
+                    imgOscilloScopeButton0100us, imgOscilloScopeButton0200us, imgOscilloScopeButton0500us,
+                    imgOscilloScopeButton0001ms, imgOscilloScopeButton0002ms, imgOscilloScopeButton0005ms,
+                    imgOscilloScopeButton0010ms, imgOscilloScopeButton0020ms, imgOscilloScopeButton0050ms, 
+                    imgOscilloScopeButton0100ms, imgOscilloScopeButton0200ms, imgOscilloScopeButton0500ms, 
+                    imgOscilloScopeButton1000ms },
+                new Point(displaymsX, displaymsY));
+            temp.Selection = GetIndexFromMs(oscilloscope.MillisecondsPerCm); // 0.5 ms/cm
+            DisplayOnOff = DisplayGUI.AddRotator((int)DisplayControls.DISPLAY_ON_OFF, gridControls,
+                new Image[] { imgDisplayOff, imgDisplayOn },
+                new Point(displayOnOffX, displayOnOffY));
+            DisplayOnOff.Selection = 1;
             numberOfFixedControls++;
 
             // Oscillators:
@@ -800,53 +804,60 @@ namespace SynthLab
                         AssembleHitarea(type.OSCILLATOR, x, y, 0, 0));
                     OscillatorGUIs[i].AddKnob((int)OscillatorControls.MODULATION, gridControls, new Image[] { imgKnob },
                         new Point(knobOscillatorX, knobOscillatorY), false, 0, 256, 30, 330, 2)
-                        .Value = (int)Patch.Oscillators[0][i].AM_Sensitivity;
+                        .Value = (int)Oscillators[0][i].AM_Sensitivity;
                     OscillatorGUIs[i].AddKnob((int)OscillatorControls.FREQUENCY, gridControls, new Image[] { imgKnob },
                         new Point(knobOscillatorX + knobOscillatorSpacingX, knobOscillatorY), false, 0, 1000, 30, 330, 1)
-                        .Value = (int)Patch.Oscillators[0][i].Frequency / 10;
+                        .Value = (int)Oscillators[0][i].Frequency / 10;
                     OscillatorGUIs[i].AddKnob((int)OscillatorControls.FINE_TUNE, gridControls, new Image[] { imgKnob },
                         new Point(knobOscillatorX + knobOscillatorSpacingX * 2, knobOscillatorY), false, 0, 999, 30, 330, 1)
-                        .Value = (int)Patch.Oscillators[0][i].FineTune;
+                        .Value = (int)Oscillators[0][i].FineTune;
                     OscillatorGUIs[i].AddKnob((int)OscillatorControls.VOLUME, gridControls, new Image[] { imgKnob },
                         new Point(knobOscillatorX + knobOscillatorSpacingX * 3, knobOscillatorY), false, 0, 127, 30, 330)
-                        .Value = (int)Patch.Oscillators[0][i].Volume;
+                        .Value = (int)Oscillators[0][i].Volume;
                     OscillatorGUIs[i].AddRotator((int)OscillatorControls.WAVE, gridControls,
-                        new Image[] { imgSelectSquare, imgSelectSawDwn, imgSelectSawUp, imgSelectTriangle, imgSelectSine, imgSelectRandom, imgSelectNoise },
+                        new Image[] { imgSelectSquare, imgSelectSawDwn, imgSelectSawUp, imgSelectTriangle, imgSelectSine,
+                            imgSelectRandom, imgSelectNoise, imgSelectWaveFile, imgSelectDrumset },
                         new Point(buttonOscillatorX, buttonOscillatorY))
-                        .Selection = (int)Patch.Oscillators[0][i].WaveForm;
+                        .Selection = (int)Oscillators[0][i].WaveForm;
                     OscillatorGUIs[i].AddRotator((int)OscillatorControls.KEYBOARD_OR_FIXED, gridControls,
                         new Image[] { imgSelectKeyboard, imgSelectFixFreq },
                         new Point(buttonOscillatorX, buttonOscillatorY + buttonOscillatorSpacingY))
-                        .Selection = Patch.Oscillators[0][i].Keyboard ? 0 : 1;
+                        .Selection = Oscillators[0][i].Keyboard ? 0 : 1;
                     OscillatorGUIs[i].AddRotator((int)OscillatorControls.ADSR_OR_PULSE, gridControls,
                         new Image[] { imgSelectorAdsr, imgSelectorPulse/*, imgSelectorAdsrFm, imgSelectorPulseFm*/ },
                         new Point(buttonOscillatorX, buttonOscillatorY + buttonOscillatorSpacingY * 2))
-                        .Selection = Patch.Oscillators[0][i].Adsr.Pulse ? 1 : 0;
+                        .Selection = Oscillators[0][i].UseAdsr ? 0 : 1;
                     OscillatorGUIs[i].AddRotator((int)OscillatorControls.VIEW_ME, gridControls,
                         new Image[] { imgSelectorViewOff, imgSelectorViewOn },
                         new Point(buttonOscillatorX, buttonOscillatorY + buttonOscillatorSpacingY * 3))
-                        .Selection = Patch.Oscillators[0][i].ViewMe ? 1 : 0;
+                        .Selection = Oscillators[0][i].ViewMe ? 1 : 0;
                     OscillatorGUIs[i].AddIndicator((int)OscillatorControls.LEDSOUNDING, gridControls, new Image[] { imgLedOn },
                         new Point(indicatorOscillatorX, indicatorOscillatorY))
-                        .IsOn = Patch.Oscillators[0][i].Volume > 0;
+                        .IsOn = Oscillators[0][i].Volume > 0;
+                    OscillatorGUIs[i].AddIndicator((int)OscillatorControls.LEDSOUNDING_LIGHT, gridControls, new Image[] { imgLedYellowOn },
+                        new Point(indicatorOscillatorX, indicatorOscillatorY))
+                        .IsOn = Oscillators[0][i].Volume > 0;
+                    OscillatorGUIs[i].AddIndicator((int)OscillatorControls.LEDSOUNDING_HEAVY, gridControls, new Image[] { imgLedRedOn },
+                        new Point(indicatorOscillatorX, indicatorOscillatorY))
+                        .IsOn = Oscillators[0][i].Volume > 0;
                     OscillatorGUIs[i].AddRotator((int)OscillatorControls.MODULATION_KNOB_TARGET, gridControls,
-                        new Image[] { imgModAM, imgModFM, imgModPM },
+                        new Image[] { imgModAM, imgModFM, imgModFMPlusMinus, imgModPM },
                         new Point(modButtonOscillatorX, buttonOscillatorY + buttonOscillatorSpacingY))
-                        .Selection = Patch.Oscillators[0][i].ModulationKnobTarget;
+                        .Selection = Oscillators[0][i].ModulationKnobTarget;
                     OscillatorGUIs[i].AddRotator((int)OscillatorControls.MODULATION_WHEEL_TARGET, gridControls,
                         new Image[] { imgOscillatorModWheelOff, imgOscillatorModWheelAM, imgOscillatorModWheelFM,
                             imgOscillatorModWheelPM, imgOscillatorModWheelFrequency, imgOscillatorModWheelFinetune,
                             imgOscillatorModWheelVolume },
                         new Point(modButtonOscillatorX + 130, buttonOscillatorY + buttonOscillatorSpacingY))
-                        .Selection = Patch.Oscillators[0][i].ModulationWheelTarget;
-                    OscillatorGUIs[i].AddAreaButton((int)OscillatorControls.AM_SOCKET, gridControls,
-                        new Rect(inputOffsetX, inputOffsetY, 30, 30));
-                    OscillatorGUIs[i].AddAreaButton((int)OscillatorControls.FM_SOCKET, gridControls,
-                        new Rect(inputOffsetX + inputSpacing, inputOffsetY, 30, 30));
-                    OscillatorGUIs[i].AddAreaButton((int)OscillatorControls.XM_SOCKET, gridControls,
-                        new Rect(inputOffsetX + inputSpacing * 2, inputOffsetY, 30, 30));
-                    OscillatorGUIs[i].AddAreaButton((int)OscillatorControls.OUT_SOCKET, gridControls,
-                        new Rect(outputOffsetX, outputOffsetY, 30, 30));
+                        .Selection = Oscillators[0][i].ModulationWheelTarget;
+                    OscillatorGUIs[i].AddRotator((int)OscillatorControls.AM_SOCKET, gridControls,
+                        new Image[] { imgSocket }, new Point(inputOffsetX, inputOffsetY));
+                    OscillatorGUIs[i].AddRotator((int)OscillatorControls.FM_SOCKET, gridControls,
+                        new Image[] { imgSocket }, new Point(inputOffsetX + inputSpacing, inputOffsetY));
+                    OscillatorGUIs[i].AddRotator((int)OscillatorControls.XM_SOCKET, gridControls,
+                        new Image[] { imgSocket }, new Point(inputOffsetX + inputSpacing * 2, inputOffsetY));
+                    OscillatorGUIs[i].AddRotator((int)OscillatorControls.OUT_SOCKET, gridControls,
+                        new Image[] { imgSocket }, new Point(outputOffsetX, outputOffsetY));
                     OscillatorGUIs[i].AddRotator((int)OscillatorControls.NUMBER, gridControls,
                         new Image[] { imgOscNumber1, imgOscNumber2, imgOscNumber3, imgOscNumber4, imgOscNumber5, imgOscNumber6, 
                             imgOscNumber7, imgOscNumber8, imgOscNumber9, imgOscNumber10, imgOscNumber11, imgOscNumber12 },
@@ -868,29 +879,29 @@ namespace SynthLab
                         AssembleHitarea(type.FILTER, x, y, 0, 0));
                     FilterGUIs[i].AddKnob((int)FilterControls.Q, gridControls, new Image[] { imgKnob },
                         new Point(knobFilterX, knobFilterY), false, 0, 127, 30, 330, 2)
-                        .Value = (int)Patch.Oscillators[0][i].Filter.Q;
+                        .Value = (int)Oscillators[0][i].Filter.Q;
                     FilterGUIs[i].AddKnob((int)FilterControls.FREQUENCY_CENTER, gridControls, new Image[] { imgKnob },
                         new Point(knobFilterX + knobFiltersSpacingX, knobFilterY), false, 0, 127, 30, 330, 1)
-                        .Value = (int)Patch.Oscillators[0][i].Filter.FrequencyCenter;
+                        .Value = (int)Oscillators[0][i].Filter.FrequencyCenter;
                     FilterGUIs[i].AddKnob((int)FilterControls.KEYBOARD_FOLLOW, gridControls, new Image[] { imgKnob },
                         new Point(knobFilterX + knobFiltersSpacingX * 2, knobFilterY), false, 0, 127, 30, 330, 1)
-                        .Value = (int)Patch.Oscillators[0][i].Filter.KeyboardFollow;
+                        .Value = (int)Oscillators[0][i].Filter.KeyboardFollow;
                     FilterGUIs[i].AddKnob((int)FilterControls.GAIN, gridControls, new Image[] { imgKnob },
                         new Point(knobFilterX + knobFiltersSpacingX * 3, knobFilterY), false, 0, 127, 30, 330, 2)
-                        .Value = (int)Patch.Oscillators[0][i].Filter.Gain;
+                        .Value = (int)Oscillators[0][i].Filter.Gain;
                     FilterGUIs[i].AddKnob((int)FilterControls.FILTER_MIX, gridControls, new Image[] { imgKnob },
                         new Point(knobFilterX + knobFiltersSpacingX * 4, knobFilterY), false, 0, 127, 30, 330, 2)
-                        .Value = (int)Patch.Oscillators[0][i].Filter.Mix;
+                        .Value = (int)Oscillators[0][i].Filter.Mix;
                     FilterGUIs[i].AddRotator((int)FilterControls.FILTER_FUNCTION, gridControls,
                         new Image[] { imgFilterOff, imgFilterFixed, imgFilterAdsrPositive, imgFilterAdsrNegative,
                             imgFilterPitchEnv, imgFilterXmFreq },
                         new Point(buttonFunctioFilterX, buttonFilterY))
-                        .Selection = Patch.Oscillators[0][i].Filter.FilterFunction;
+                        .Selection = Oscillators[0][i].Filter.FilterFunction;
                     FilterGUIs[i].AddRotator((int)FilterControls.MODULATION_WHEEL_TARGET, gridControls,
                         new Image[] { imgModFilterOff, imgModFilterQ, imgModFilterFreq, imgModFilterKeyFollow, 
                             imgModFilterGain, imgModFilterMix },
                         new Point(buttonModFilterX, buttonFilterY))
-                        .Selection = Patch.Oscillators[0][i].Filter.ModulationWheelTarget;
+                        .Selection = Oscillators[0][i].Filter.ModulationWheelTarget;
                     ((Knob)FilterGUIs[i].SubControls.ControlsList[(int)FilterControls.KEYBOARD_FOLLOW]).Value = 63;
                     i++;
                 }
@@ -910,54 +921,54 @@ namespace SynthLab
                     PitchEnvelopeGUIs[i].AddRotator((int)PitchEnvelopeControls.PITCH_ENV_MODULATION_WHEEL_USE, gridControls,
                         new Image[] { imgModWheelOff, imgModWheelDepth, imgModWheelSpeed },
                         new Point(buttonPitchEnvelopeModSelectorX, buttonPitchEnvelopeModSelectorY))
-                        .Selection = Patch.Oscillators[0][i].PitchEnvelope.PitchEnvModulationWheelTarget;
+                        .Selection = Oscillators[0][i].PitchEnvelope.PitchEnvModulationWheelTarget;
                     PitchEnvelopeGUIs[i].AddKnob((int)PitchEnvelopeControls.DEPTH, gridControls, new Image[] { imgKnob },
                         new Point(knobPitchEnvelopeX, knobPitchEnvelopeY), false, 0, 127, 30, 330, 2)
-                        .Value = (int)Patch.Oscillators[0][i].PitchEnvelope.Depth;
+                        .Value = (int)Oscillators[0][i].PitchEnvelope.Depth;
                     PitchEnvelopeGUIs[i].AddKnob((int)PitchEnvelopeControls.SPEED, gridControls, new Image[] { imgKnob },
                         new Point(knobPitchEnvelopeX + knobPitchEnvelopeSpacingX, knobPitchEnvelopeY), false, 1, 300, 30, 330)
-                        .Value = (int)Patch.Oscillators[0][i].PitchEnvelope.Speed;
+                        .Value = (int)Oscillators[0][i].PitchEnvelope.Speed;
                     PitchEnvelopeGUIs[i].AddRotator((int)PitchEnvelopeControls.MOD_PITCH, gridControls,
                         new Image[] { imgOscillatorFreqOff, imgOscillatorFreqOn },
                         new Point(buttonPitchEnvelopeModSelectorX,
                         buttonPitchEnvelopeModSelectorY + buttonPitchEnvelopeSpacingY))
-                        .Selection = Patch.Oscillators[0][i].PitchEnvelope.PitchEnvPitch ? 1 : 0;
+                        .Selection = Oscillators[0][i].PitchEnvelope.PitchEnvPitch;
                     PitchEnvelopeGUIs[i].AddRotator((int)PitchEnvelopeControls.MOD_AM, gridControls,
                         new Image[] { imgOscillatorAMOff, imgOscillatorAMOn },
                         new Point(buttonPitchEnvelopeModSelectorX + buttonPitchEnvelopeModSpacingX,
                         buttonPitchEnvelopeModSelectorY + buttonPitchEnvelopeSpacingY))
-                        .Selection = Patch.Oscillators[0][i].PitchEnvelope.PitchEnvAm ? 1 : 0;
+                        .Selection = Oscillators[0][i].PitchEnvelope.PitchEnvAm;
                     PitchEnvelopeGUIs[i].AddRotator((int)PitchEnvelopeControls.MOD_FM, gridControls,
                         new Image[] { imgOscillatorFMOff, imgOscillatorFMOn },
                         new Point(buttonPitchEnvelopeModSelectorX,
                         buttonPitchEnvelopeModSelectorY + buttonPitchEnvelopeSpacingY * 2))
-                        .Selection = Patch.Oscillators[0][i].PitchEnvelope.PitchEnvFm ? 1 : 0;
+                        .Selection = Oscillators[0][i].PitchEnvelope.PitchEnvFm;
                     PitchEnvelopeGUIs[i].AddRotator((int)PitchEnvelopeControls.MOD_XM, gridControls,
                         new Image[] { imgOscillatorPMOff, imgOscillatorPMOn },
                         new Point(buttonPitchEnvelopeModSelectorX + buttonPitchEnvelopeModSpacingX,
                         buttonPitchEnvelopeModSelectorY + buttonPitchEnvelopeSpacingY * 2))
-                        .Selection = Patch.Oscillators[0][i].PitchEnvelope.PitchEnvXm ? 1 : 0;
+                        .Selection = Oscillators[0][i].PitchEnvelope.PitchEnvXm;
                     PitchEnvelopeGUIs[i].AddGraph((int)PitchEnvelopeControls.GRAPH, gridControls,
                         new Image[] { imgPitchEnvelopeGraphBackground }, new Point(13, 13),
                         new SolidColorBrush(Windows.UI.Colors.Chartreuse), 2)
-                        .CopyPoints(Patch.Oscillators[0][i].PitchEnvelope.Points);
+                        .CopyPoints(Oscillators[0][i].PitchEnvelope.Points);
                     i++;
                 }
             }
 
-            for (int poly = 0; poly < Patch.Polyphony; poly++)
+            for (int poly = 0; poly < 6; poly++)
             {
                 for (int osc = 0; osc < oscillatorCount; osc++)
                 {
-                    if (Patch.Layout == Layouts.FOUR_OSCILLATORS)
+                    if (Layout == Layouts.FOUR_OSCILLATORS)
                     {
-                        Patch.Oscillators[poly][osc].PitchEnvelope.SetBounds(
+                        Oscillators[poly][osc].PitchEnvelope.SetBounds(
                             ((Graph)PitchEnvelopeGUIs[osc].SubControls
                             .ControlsList[(int)PitchEnvelopeControls.GRAPH]).HitArea);
                     }
                     else
                     {
-                        Patch.Oscillators[poly][osc].PitchEnvelope.SetBounds(
+                        Oscillators[poly][osc].PitchEnvelope.SetBounds(
                                 ((Graph)PitchEnvelopeGUIs[0].SubControls
                                 .ControlsList[(int)PitchEnvelopeControls.GRAPH]).HitArea);
                     }
@@ -976,21 +987,31 @@ namespace SynthLab
                         AssembleHitarea(type.ADSR, x, y, 0, 0));
                     AdsrGUIs[i].AddKnob((int)AdsrControls.ADSR_A, gridControls, new Image[] { imgKnob },
                         new Point(knobAdsrX, knobAdsrY), false, 0, 127, 30, 330, 2)
-                        .Value = (int)Patch.Oscillators[0][i].Adsr.AdsrAttackTime;
+                        .Value = (int)Oscillators[0][i].Adsr.AdsrAttackTime;
                     AdsrGUIs[i].AddKnob((int)AdsrControls.ADSR_D, gridControls, new Image[] { imgKnob },
                         new Point(knobAdsrX + knobAdsrSpacingX, knobAdsrY), false, 0, 127, 30, 330, 2)
-                        .Value = (int)Patch.Oscillators[0][i].Adsr.AdsrDecayTime;
+                        .Value = (int)Oscillators[0][i].Adsr.AdsrDecayTime;
                     AdsrGUIs[i].AddKnob((int)AdsrControls.ADSR_S, gridControls, new Image[] { imgKnob },
                         new Point(knobAdsrX + knobAdsrSpacingX * 2, knobAdsrY), false, 0, 127, 30, 330, 2)
-                        .Value = (int)Patch.Oscillators[0][i].Adsr.AdsrSustainLevel;
+                        .Value = (int)Oscillators[0][i].Adsr.AdsrSustainLevel;
                     AdsrGUIs[i].AddKnob((int)AdsrControls.ADSR_R, gridControls, new Image[] { imgKnob },
                         new Point(knobAdsrX + knobAdsrSpacingX * 3, knobAdsrY), false, 0, 127, 30, 330, 2)
-                        .Value = (int)Patch.Oscillators[0][i].Adsr.AdsrReleaseTime;
+                        .Value = (int)Oscillators[0][i].Adsr.AdsrReleaseTime;
                     AdsrGUIs[i].AddRotator((int)AdsrControls.ADSR_MODULATION_WHEEL_USE, gridControls,
                         new Image[] { imgAdsrModOff, imgAdsrModA, imgAdsrModD, imgAdsrModS, imgAdsrModR },
                         new Point(buttonOscillatorX, buttonOscillatorY));
+                    AdsrGUIs[i].AddRotator((int)AdsrControls.ADSR_AM_SENS, gridControls,
+                        new Image[] { imgAdsrOffAm, imgAdsrOnAm },
+                        new Point(buttonOscillatorX, buttonOscillatorY + buttonOscillatorSpacingY));
+                    AdsrGUIs[i].AddRotator((int)AdsrControls.ADSR_FM_SENS, gridControls,
+                        new Image[] { imgAdsrOffFm, imgAdsrOnFm },
+                        new Point(buttonOscillatorX, buttonOscillatorY + buttonOscillatorSpacingY * 2));
+                    AdsrGUIs[i].AddRotator((int)AdsrControls.ADSR_XM_SENS, gridControls,
+                        new Image[] { imgAdsrOffXm, imgAdsrOnXm },
+                        new Point(buttonOscillatorX, buttonOscillatorY + buttonOscillatorSpacingY * 3));
                     AdsrGUIs[i].AddRotator((int)AdsrControls.PEDAL_HOLD, gridControls,
-                        new Image[] { imgSelectHoldOff, imgSelectHoldOn }, new Point(342, 145));
+                        new Image[] { imgSelectHoldOff, imgSelectHoldOn },
+                        new Point(buttonOscillatorX, + buttonOscillatorY + buttonOscillatorSpacingY * 4 + 10));
                     ((Knob)AdsrGUIs[i].SubControls.ControlsList[(int)AdsrControls.ADSR_S]).Value = 127;
                     AdsrGUIs[i].AddGraph((int)AdsrControls.GRAPH, gridControls,
                         new Image[] { imgAdsrGraphBackground }, new Point(15, 13),
@@ -1019,14 +1040,14 @@ namespace SynthLab
             int yDown = 164;
             int ySame = 16;
             int xStep = 475;
-            int yStep = 207;
+            //int yStep = 207;
 
             // Hanging wire:
             HangingWire = Controls.ControlsList.Count;
             Controls.AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgHangingWire }, new Point(100, 100));
 
             // Wires:
-            Patch.Wiring.wires.Clear();
+            Wiring.wires.Clear();
             for (int osc = 0; osc < oscillatorCount; osc++)
             {
                 // Connections within the same column one row down
@@ -1035,29 +1056,29 @@ namespace SynthLab
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM1D0L },
                         new Point(x, yDown));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs1D0L[osc]), indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D0L[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D0L[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM1D0L },
                         new Point(x, yDown));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs1D0L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D0L[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D0L[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM1D0L },
                         new Point(x, yDown));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs1D0L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D0L[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D0L[osc]].XM_ModulatorId == osc;
                 }
 
                 // Connections within the same column two rows down
@@ -1065,30 +1086,30 @@ namespace SynthLab
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM2D0L },
                         new Point(x, yDown));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs2D0L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D0L[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D0L[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM2D0L },
                         new Point(x, yDown));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs2D0L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D0L[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D0L[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM2D0L },
                         new Point(x, yDown));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs2D0L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D0L[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D0L[osc]].XM_ModulatorId == osc;
                 }
 
                 // Connections within the same column three rows down
@@ -1096,30 +1117,30 @@ namespace SynthLab
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM3D0L },
                         new Point(x, yDown));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs3D0L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs3D0L[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs3D0L[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM3D0L },
                         new Point(x, yDown));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs3D0L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs3D0L[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs3D0L[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM3D0L },
                         new Point(x, yDown));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs3D0L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs3D0L[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs3D0L[osc]].XM_ModulatorId == osc;
                 }
 
                 // Connections to one column right in the same row
@@ -1127,420 +1148,420 @@ namespace SynthLab
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM0D1R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs0D1R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs0D1R[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs0D1R[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM0D1R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs0D1R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs0D1R[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs0D1R[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM0D1R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs0D1R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs0D1R[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs0D1R[osc]].XM_ModulatorId == osc;
                 }
 
                 if (oscillatorsWithOutputs0D3R[osc] > -1)
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM0D3R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs0D3R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs0D3R[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs0D3R[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM0D3R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs0D3R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs0D3R[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs0D3R[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM0D3R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs0D3R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs0D3R[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs0D3R[osc]].XM_ModulatorId == osc;
                 }
 
                 if (oscillatorsWithOutputs1D1R[osc] > -1)
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM1D1R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs1D1R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D1R[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D1R[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM1D1R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs1D1R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D1R[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D1R[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM1D1R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs1D1R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D1R[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D1R[osc]].XM_ModulatorId == osc;
                 }
 
                 if (oscillatorsWithOutputs1D2R[osc] > -1)
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM1D2R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs1D2R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D2R[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D2R[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM1D2R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs1D2R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D2R[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D2R[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM1D2R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs1D2R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D2R[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D2R[osc]].XM_ModulatorId == osc;
                 }
 
                 if (oscillatorsWithOutputs1D3R[osc] > -1)
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM1D2R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs1D2R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D2R[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D2R[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM1D2R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs1D2R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D2R[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D2R[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM1D2R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs1D2R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D2R[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D2R[osc]].XM_ModulatorId == osc;
                 }
 
                 if (oscillatorsWithOutputs2D1R[osc] > -1)
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM2D1R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs2D1R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D1R[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D1R[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM2D1R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs2D1R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D1R[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D1R[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM2D1R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs2D1R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D1R[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D1R[osc]].XM_ModulatorId == osc;
                 }
 
                 if (oscillatorsWithOutputs2D2R[osc] > -1)
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM2D2R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs2D2R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D2R[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D2R[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM2D2R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs2D2R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D2R[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D2R[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM2D2R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs2D2R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D2R[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D2R[osc]].XM_ModulatorId == osc;
                 }
 
                 if (oscillatorsWithOutputs2D3R[osc] > -1)
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM2D3R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs2D3R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D3R[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D3R[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM2D3R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs2D3R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D3R[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D3R[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM2D3R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs2D3R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D3R[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D3R[osc]].XM_ModulatorId == osc;
                 }
 
                 if (oscillatorsWithOutputs1D1L[osc] > -1)
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM1D1L },
                         new Point(x - xStep, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs1D1L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D1L[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D1L[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM1D1L },
                         new Point(x - xStep, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs1D1L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D1L[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D1L[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM1D1L },
                         new Point(x - xStep, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs1D1L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D1L[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D1L[osc]].XM_ModulatorId == osc;
                 }
 
                 if (oscillatorsWithOutputs1D2L[osc] > -1)
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM1D2L },
                         new Point(x - xStep * 2, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs1D2L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D2L[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D2L[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM1D2L },
                         new Point(x - xStep * 2, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs1D2L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D2L[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D2L[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM1D2L },
                         new Point(x - xStep * 2, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs1D2L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D2L[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D2L[osc]].XM_ModulatorId == osc;
                 }
 
                 if (oscillatorsWithOutputs1D3L[osc] > -1)
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM1D3L },
                         new Point(x - xStep * 3, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs1D3L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D3L[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D3L[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM1D3L },
                         new Point(x - xStep * 3, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs1D3L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D3L[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D3L[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM1D3L },
                         new Point(x - xStep * 3, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs1D3L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs1D3L[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs1D3L[osc]].XM_ModulatorId == osc;
                 }
 
                 if (oscillatorsWithOutputs2D1L[osc] > -1)
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM2D1L },
                         new Point(x - xStep, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs2D1L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D1L[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D1L[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM2D1L },
                         new Point(x - xStep, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs2D1L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D1L[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D1L[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM2D1L },
                         new Point(x - xStep, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs2D1L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D1L[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D1L[osc]].XM_ModulatorId == osc;
                 }
 
                 if (oscillatorsWithOutputs2D2L[osc] > -1)
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM2D2L },
                         new Point(x - xStep * 2, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs2D2L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D2L[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D2L[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM2D2L },
                         new Point(x - xStep * 2, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs2D2L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D2L[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D2L[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM2D2L },
                         new Point(x - xStep * 2, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs2D2L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D2L[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D2L[osc]].XM_ModulatorId == osc;
                 }
 
                 if (oscillatorsWithOutputs2D3L[osc] > -1)
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM2D3L },
                         new Point(x - xStep * 3, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs2D3L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D3L[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D3L[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM2D3L },
                         new Point(x - xStep * 3, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs2D3L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D3L[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D3L[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM2D3L },
                         new Point(x - xStep * 3, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs2D3L[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs2D3L[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs2D3L[osc]].XM_ModulatorId == osc;
                 }
 
                 // Connections to two columns right in the same row
@@ -1548,30 +1569,30 @@ namespace SynthLab
                 {
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgAM0D2R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.AM,
+                    Wiring.wires.Add(new Wire(SocketType.AM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.AM, oscillatorsWithInputs0D2R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs0D2R[osc]].AM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs0D2R[osc]].AM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgFM0D2R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.FM,
+                    Wiring.wires.Add(new Wire(SocketType.FM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.FM, oscillatorsWithInputs0D2R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs0D2R[osc]].FM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs0D2R[osc]].FM_ModulatorId == osc;
 
                     indicator = OscillatorGUIs[osc].AddIndicator(Controls.ControlsList.Count, gridControls, new Image[] { imgXM0D2R },
                         new Point(x, ySame));
-                    Patch.Wiring.wires.Add(new Wire(SocketType.XM,
+                    Wiring.wires.Add(new Wire(SocketType.XM,
                         new Socket(SocketType.OUT, osc),
                         new Socket(SocketType.XM, oscillatorsWithInputs0D2R[osc]),
                         indicator));
-                    Patch.Wiring.wires[Patch.Wiring.wires.Count - 1].Indicator.IsOn =
-                        Patch.Oscillators[0][oscillatorsWithInputs0D2R[osc]].XM_ModulatorId == osc;
+                    Wiring.wires[Wiring.wires.Count - 1].Indicator.IsOn =
+                        Oscillators[0][oscillatorsWithInputs0D2R[osc]].XM_ModulatorId == osc;
                 }
             }
         }
@@ -1653,6 +1674,32 @@ namespace SynthLab
                     break;
             }
             return rect;
+        }
+
+        private int GetIndexFromVoltPerCm(double volt)
+        {
+            double[] voltValues = new double[] { 0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000 };
+            for (int i = 0; i < voltValues.Length; i++)
+            {
+                if (voltValues[i] == volt)
+                {
+                    return i;
+                }
+            }
+            return 2; // Default 0.05 ms
+        }
+
+        private int GetIndexFromMs(double ms)
+        {
+            double[] msValues = new double[] { 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000 };
+            for (int i = 0; i < msValues.Length; i++)
+            {
+                if (msValues[i] == ms)
+                {
+                    return i;
+                }
+            }
+            return 2; // Default 0.05 ms
         }
     }
 }

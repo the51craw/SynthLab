@@ -101,3 +101,26 @@ Make DigitalDisplay show initial frequency on startup and patch load.
 
 Implement ADSR mode ADSR FM and PULSE FM, for Keyboard and LFO mode.
 Removed, not needed since we have a pitch envelope generator.
+
+=== Remaining issues ===============================================================
+=== Above issues apply to old versions and some issues are not relevant due to some
+=== more or less massive re-designes. Add new issues here and resolve them.
+====================================================================================
+
+* Pitch envelope in layout with four oscillators has the following problem:
+    when adding/removing points to pitch envelope 2, also pitch envelope 1
+    is changed. When adding/removing points to pitch 1, the points are changed
+    to be the same as envelope 2.
+
+* Pitch evelope point coordinates does not follow window size properly. Investigate
+    and fix.
+
+* Oscilloscope right end is showing a faulty image.
+
+* Oscilloscope should show a flat line after last key off.
+
+Oscilloscope settings differs between Rotator selection and startup values.
+
+Identify and remove obsolete code.
+
+Remove unused files.

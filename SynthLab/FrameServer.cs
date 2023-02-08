@@ -5,8 +5,6 @@ using Windows.Foundation;
 using Windows.Media;
 using Windows.Media.Audio;
 using Windows.UI.Xaml.Controls;
-//using AudioEffectComponent;
-//using MathNet.Numerics.IntegralTransforms;
 
 namespace SynthLab
 {
@@ -19,29 +17,35 @@ namespace SynthLab
 
     public sealed partial class MainPage : Page
     {
-        public int adjust = 0;
-        public int fadjust = 0;
+        //public int adjust = 0;
+        public double[] PitchBend; // -1 -- +1 => -1 octave -- +1 octave
         public Boolean allowGuiUpdates = false;
+        public Boolean allowUpdateOscilloscope = false;
         public FrameServer FrameServer;
         public CURRENTACTIVITY CurrentActivity = CURRENTACTIVITY.NONE;
     }
     public partial class FrameServer
     {
         MainPage mainPage;
-        public PolyServer[] PolyServers;
+        float[] oscilloscopeData;
 
         /// <summary>
         /// The frame server's FrameInputNode delivers the audio data to the AudioGraph system.
         /// </summary>
         public AudioFrameInputNode FrameInputNode;
 
-        public ReverbEffectDefinition reverbEffectDefinition;
-
         private AudioFrame frame;
 
         public FrameServer(MainPage mainPage)
         {
             this.mainPage = mainPage;
+
+            // Create pitch bend values for all MIDI channels:
+            this.mainPage.PitchBend = new double[16];
+            for (int i = 0; i < 16; i++)
+            {
+                this.mainPage.PitchBend[i] = 1;
+            }
         }
 
         public async Task<bool> InitAudio()
@@ -59,28 +63,32 @@ namespace SynthLab
             StartAudioGraph();
         }
 
-        public void Init()
-        {
-            //await Task.Delay(100);
-            PolyServers = new PolyServer[32];
-            for (int poly = 0; poly < 32; poly++)
-            {
-                PolyServers[poly] = new PolyServer(mainPage);
-            }
-        }
-
         /// <summary>
         /// Assembles a frame from all actively sounding oscillators
         /// in all used polyphony layer (for all pressed keys).
+        /// Rather than waiting for a request form AudioGraph we create a frame while waiting.
+        /// After creating the new frame we need to know weather to send it or to wait for
+        /// next request. 
         /// </summary>
-
         public unsafe void FrameInputNode_QuantumStarted(AudioFrameInputNode sender, FrameInputNodeQuantumStartedEventArgs args)
         {
-            if (mainPage.initDone && mainPage.SampleCount != 0 /*&& mainPage.dispatcher.NumberOfOscillatorsInUse() > 0*/)
+            mainPage.CurrentActivity = CURRENTACTIVITY.GENERATING_WAVE_SHAPE;
+            uint requestedNumberOfSamples = (uint)args.RequiredSamples;
+            mainPage.SampleCount = requestedNumberOfSamples;
+
+            if (mainPage.initDone && requestedNumberOfSamples != 0)
             {
-                mainPage.CurrentActivity = CURRENTACTIVITY.GENERATING_WAVE_SHAPE;
-                mainPage.SampleCount = (uint)args.RequiredSamples;
-                frame = new AudioFrame(mainPage.SampleCount * sizeof(float));
+                // If there is already a pre-created frame, hand it over to AudioGraph:
+                if (frame != null)
+                {
+                    FrameInputNode.AddFrame(frame);
+                    mainPage.allowUpdateOscilloscope = true;
+                    mainPage.oscilloscope.AddWaveData(oscilloscopeData, requestedNumberOfSamples);
+                }
+
+                // Then create next frame rather than waiting for AudioGraph to request it:
+                frame = new AudioFrame(2 * requestedNumberOfSamples * sizeof(float)); // Times 2 because it is stereo.
+                oscilloscopeData = new float[2 * requestedNumberOfSamples];
 
                 using (AudioBuffer buffer = frame.LockBuffer(AudioBufferAccessMode.Write))
                 using (IMemoryBufferReference reference = buffer.CreateReference())
@@ -97,42 +105,34 @@ namespace SynthLab
 
                     // Since FrameSever adds all waveforms from the PolyServer
                     // together, we must first sett all samples to zero:
-                    for (int i = 0; i < mainPage.SampleCount; i++)
+                    for (int i = 0; i < requestedNumberOfSamples * 2; i++)
                     {
                         bufferPointer[i] = 0;
+                        oscilloscopeData[i] = 0;
                     }
 
                     // Generate and add together audio data for all channels and pressed keys:
-                    for (int ch = 0; ch < 17; ch++)
+                    for (int osc = 0; osc < 12; osc++)
                     {
-                        for (int poly = 0; poly < mainPage.Patch.Polyphony; poly++)
+                        // Check if this oscillator needs to use WaveShape:
+                        //mainPage.Oscillators[0][osc].WaveShape.SetNeedsToBeUsed(mainPage.Oscillators[0][osc]);
+                        for (int poly = 0; poly < 6; poly++)
                         {
-                            if (mainPage.dispatcher[ch].PolyIsPlaying(poly)) // IsPressed[poly])
+                            if (mainPage.dispatcher[osc].PolyIsPlaying(poly)) // IsPressed[poly])
                             {
-                                PolyServers[poly].GenerateAudioData(mainPage.SampleCount, poly, ch);
-                                for (int i = 0; i < mainPage.SampleCount; i++)
+                                //mainPage.Oscillators[poly][osc].WaveShape.SetNeedsToBeUsed(mainPage.Oscillators[0][osc].WaveShape.NeedsToBeUsed);
+                                //PolyServers[poly].GenerateAudioData(poly, osc, requestedNumberOfSamples);
+                                mainPage.Oscillators[poly][osc].GenerateAudioData(requestedNumberOfSamples);
+                                for (int i = 0; i < requestedNumberOfSamples * 2; i++)
                                 {
-                                    bufferPointer[i] += (float)PolyServers[poly].WaveData[i];
+                                    bufferPointer[i] += (float)mainPage.Oscillators[poly][osc].WaveData[i];
+                                    oscilloscopeData[i] += (float)mainPage.Oscillators[poly][osc].WaveData[i];
                                 }
                             }
                         }
                     }
                 }
-
-                if (frame != null)
-                {
-                    FrameInputNode.AddFrame(frame);
-                    if (mainPage.selectedOscillator.ModulationType == ModulationType.DX)
-                    {
-                        mainPage.allowGuiUpdates = true;
-                    }
-                }
-                else
-                {
-                    Debug.WriteLine("Missed!");
-                }
                 mainPage.CurrentActivity = CURRENTACTIVITY.NONE;
-                //mainPage.hold = false;
             }
         }
     }

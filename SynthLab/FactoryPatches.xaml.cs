@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
@@ -14,8 +15,6 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
-
-// The Content Dialog item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace SynthLab
 {
@@ -37,7 +36,15 @@ namespace SynthLab
 
         private async void Init()
         {
-            StorageFolder storageFolder = ApplicationData.Current.LocalFolder;
+            var packagePath = Package.Current.InstalledLocation;
+            var folderPath = Path.Combine(packagePath.Path, "Patches");
+
+            //var packagePath = Package.Current.InstalledLocation;
+            //var folderPath = packagePath + "\\Patches";
+            //StorageFolder storageFolder = await StorageFolder.GetFolderFromPathAsync(packagePath.Path);
+            StorageFolder storageFolder = 
+                await StorageFolder.GetFolderFromPathAsync(folderPath);
+            //StorageFolder storageFolder = ApplicationData.Current.LocalFolder;
             IReadOnlyList<StorageFile> files = await storageFolder.GetFilesAsync();
             RowDefinition rowDefinition;
             Image button;
@@ -45,6 +52,11 @@ namespace SynthLab
             FontFamily ethnocentric = new FontFamily("Ethnocentric");
             int i = 0;
             //foreach (StorageFile file in patches)
+            //StorageFolder patchesFolder = await storageFolder.GetFolderAsync("Patches");
+            //foreach (StorageFolder sf in storageFolder)
+            {
+
+            }
             foreach (StorageFile file in files)
             {
                 rowDefinition = new RowDefinition();

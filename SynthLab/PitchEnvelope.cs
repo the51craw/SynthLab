@@ -1,13 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Timers;
-using UwpControlsLibrary;
 using Windows.Foundation;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Shapes;
 
 namespace SynthLab
 {
@@ -36,7 +32,7 @@ namespace SynthLab
         /// <summary>
         ///  The speed of progress to change pitch
         /// </summary>
-        public int Speed { get { return intSpeed; } set { intSpeed = value; speed = (double)((value + 1) / 16f); } }
+        public int Speed { get { return intSpeed; } set { intSpeed = value; speed = (double)((value + 1) / 64f); } }
 
         /// <summary>
         /// Pot value of speed
@@ -51,6 +47,7 @@ namespace SynthLab
         /// <summary>
         /// Value from graph at current time varying from -1 to +1.
         /// </summary>
+        [JsonIgnore]
         public float Value = 0.0f;
 
         /// <summary>
@@ -59,10 +56,10 @@ namespace SynthLab
         public List<Point> Points;
 
         public int PitchEnvModulationWheelTarget = 0;
-        public bool PitchEnvPitch = true;
-        public bool PitchEnvAm = false;
-        public bool PitchEnvFm = false;
-        public bool PitchEnvXm = false;
+        public int PitchEnvPitch = 1;
+        public int PitchEnvAm = 0;
+        public int PitchEnvFm = 0;
+        public int PitchEnvXm = 0;
 
 
         private Brush brush = new SolidColorBrush(Windows.UI.Colors.Chartreuse);
@@ -71,7 +68,9 @@ namespace SynthLab
         [JsonIgnore]
         public Oscillator oscillator;
         private Rect pitchEnvelopeBounds;
+        [JsonIgnore]
         public int X;
+        [JsonIgnore]
         public int Y;
         private double xPosition;
 
@@ -79,31 +78,39 @@ namespace SynthLab
         // PitchEnvelope private
         //-----------------------------------------------------------------------------------------------------
 
-        private float sustainLevel;
-        private Timer pitchEnvelopeTimer;
+        [JsonConstructor]
+        public PitchEnvelope() { }
 
-        public PitchEnvelope(MainPage mainPage, Oscillator oscillatorId)
+        public PitchEnvelope(MainPage mainPage, Oscillator oscillator)
         {
             this.mainPage = mainPage;
             this.oscillator = oscillator;
             Points = new List<Point>();
-            pitchEnvelopeTimer = new Timer(10);
-            pitchEnvelopeTimer.Elapsed += PitchEnvelopeTimer_Tick;
             Value = 0;
-            //pitchEnvelopeTimer.Start();
+        }
+
+        public PitchEnvelope(Oscillator oscillator, PitchEnvelope pitchEnvelope)
+        {
+            this.mainPage = oscillator.mainPage;
+            this.oscillator = oscillator;
+            Points = new List<Point>();
+            foreach (Point point in pitchEnvelope.Points)
+            {
+                Points.Add(new Point(point.X, point.Y));
+            }
+            Value = 0;
+            PitchEnvModulationWheelTarget = pitchEnvelope.PitchEnvModulationWheelTarget;
+            Depth = pitchEnvelope.Depth;
+            Speed = pitchEnvelope.Speed;
+            PitchEnvPitch = pitchEnvelope.PitchEnvPitch;
+            PitchEnvAm = pitchEnvelope.PitchEnvAm;
+            PitchEnvFm = pitchEnvelope.PitchEnvFm;
+            PitchEnvXm = pitchEnvelope.PitchEnvXm;
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////
         // PitchEnvelope funtions
         ////////////////////////////////////////////////////////////////////////////////////////////////
-
-        private void PitchEnvelopeTimer_Tick(object sender, object e)
-        {
-            if (mainPage.initDone)
-            {
-                CalculateValue();
-            }
-        }
 
         public void Start()
         {
@@ -111,13 +118,20 @@ namespace SynthLab
             {
                 xPosition = 0;
                 Value = 0;
-                pitchEnvelopeTimer.Start();
+            }
+        }
+
+        public void Advance()
+        {
+            if (Points.Count > 1)
+            {
+                xPosition++;
+                CalculateValue();
             }
         }
 
         public void CalculateValue()
         {
-            pitchEnvelopeTimer.Stop();
             if (Points.Count > 1)
             {
                 try
@@ -139,7 +153,7 @@ namespace SynthLab
                     }
                     catch (Exception exception)
                     {
-                        ContentDialog error = new Error(exception.Message);
+                        ContentDialog error = new Message(exception.Message);
                         _ = error.ShowAsync();
                     }
                     p1--;
@@ -152,7 +166,7 @@ namespace SynthLab
                     }
                     catch (Exception exception)
                     {
-                        ContentDialog error = new Error(exception.Message);
+                        ContentDialog error = new Message(exception.Message);
                         _ = error.ShowAsync();
                     }
                     if (p2 < Points.Count && p1 == p2 - 1 && Points[p2].X - Points[p1].X > 0)
@@ -161,16 +175,15 @@ namespace SynthLab
                         double y1 = pitchEnvelopeBounds.Height / 2 - Points[p1].Y;
                         double y2 = pitchEnvelopeBounds.Height / 2 - Points[p2].Y;
                         Value = (float)((y1 + (y2 - y1) * xFraction) * depth / pitchEnvelopeBounds.Height * 2);
-                        pitchEnvelopeTimer.Start();
                     }
-                    else if (Math.Abs(Value) < 0.03)
+                    else if (Math.Abs(Value) < 0.05)
                     {
                         Value = 0;
                     }
                 }
                 catch (Exception exception)
                 {
-                    ContentDialog error = new Error(exception.Message);
+                    ContentDialog error = new Message(exception.Message);
                     Value = 0;
                     _ = error.ShowAsync();
                 }
@@ -180,11 +193,6 @@ namespace SynthLab
                 Value = 0;
                 return;
             }
-        }
-
-        public void Stop()
-        {
-            pitchEnvelopeTimer.Stop();
         }
 
         public void SetBounds(Rect rect)
